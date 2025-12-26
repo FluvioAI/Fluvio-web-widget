@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Widget Test - Default Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f8f9fa;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #2196f3;
+            color: #1565c0;
+        }
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        h2, h3 {
+            color: #34495e;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="status">✅ Basic Test Active</div>
+    
+    <div class="container">
+        <h1>🧪 Basic Widget Test</h1>
+        
+        <div class="test-info">
+            <strong>Test Scenario:</strong> Default widget with standard blue branding
+            <br><strong>Expected:</strong> Blue floating button in bottom-right corner
+            <br><strong>Configuration:</strong> Default colors, position, and text
+        </div>
+
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Look for the blue floating chat button in the bottom-right corner</li>
+            <li>Click the button to open the voice assistant panel</li>
+            <li>Verify the panel shows "Voice Assistant" title</li>
+            <li>Click "Call" to test the connection (will show demo mode)</li>
+            <li>Test on mobile by resizing your browser window</li>
+        </ol>
+
+        <h2>Sample Website Content</h2>
+        <p>This is a sample website to demonstrate how the voice widget integrates with existing content. The widget should appear as a floating button without interfering with the page layout or functionality.</p>
+        
+        <h3>About Our Service</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+        
+        <h3>Contact Information</h3>
+        <p>Email: support@example.com<br>
+        Phone: (555) 123-4567<br>
+        Address: 123 Main St, City, State 12345</p>
+
+        <h3>Widget Integration Code</h3>
+        <pre style="background: #f4f4f4; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+&lt;script src="../fluvio-universal-widget.js" 
+        data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+        data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"&gt;&lt;/script&gt;</pre>
+    </div>
+
+    <!-- WIDGET IMPLEMENTATION -->
+    <script src="../fluvio-universal-widget.js" 
+            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"></script>
+</body>
+</html>

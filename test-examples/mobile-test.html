@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Responsive Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        .content {
+            padding: 1.5rem;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .test-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .mobile-info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border: 1px solid #bbdefb;
+        }
+        .status {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            .header {
+                padding: 1.5rem 1rem;
+            }
+            .content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status">📱 Mobile Test</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📱 Mobile Responsive Test</h1>
+            <p>Testing voice widget on mobile devices</p>
+        </div>
+
+        <div class="content">
+            <div class="mobile-info">
+                <strong>📱 Mobile Test Scenario:</strong> Widget responsiveness on small screens
+                <br><strong>Expected:</strong> Widget adapts to mobile screen sizes
+                <br><strong>Test:</strong> Resize browser or use mobile device
+            </div>
+
+            <h2>Mobile Test Instructions</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <strong>1. Widget Position</strong><br>
+                    Floating button should stay in bottom-right corner on mobile
+                </div>
+                <div class="test-item">
+                    <strong>2. Panel Size</strong><br>
+                    Panel should expand to fit mobile screen width
+                </div>
+                <div class="test-item">
+                    <strong>3. Touch Targets</strong><br>
+                    All buttons should be easy to tap (48px minimum)
+                </div>
+                <div class="test-item">
+                    <strong>4. Text Readability</strong><br>
+                    All text should be readable without zooming
+                </div>
+                <div class="test-item">
+                    <strong>5. Scroll Behavior</strong><br>
+                    Widget should not interfere with page scrolling
+                </div>
+            </div>
+
+            <h3>Mobile Features</h3>
+            <ul>
+                <li>✅ Responsive design adapts to screen size</li>
+                <li>✅ Touch-friendly button sizes</li>
+                <li>✅ No hover effects on touch devices</li>
+                <li>✅ Optimized animations for mobile</li>
+                <li>✅ Proper z-index layering</li>
+            </ul>
+
+            <h3>Test on Different Devices</h3>
+            <p>Try these screen sizes:</p>
+            <ul>
+                <li><strong>iPhone:</strong> 375px width</li>
+                <li><strong>Android:</strong> 360px width</li>
+                <li><strong>Tablet:</strong> 768px width</li>
+                <li><strong>Desktop:</strong> 1200px+ width</li>
+            </ul>
+
+            <div style="background: #f4f4f4; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+                <strong>Browser Dev Tools:</strong><br>
+                Press F12 → Click device icon → Select mobile device
+            </div>
+
+            <h3>Widget Code</h3>
+            <pre style="background: #f4f4f4; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem;">
+&lt;script src="../fluvio-universal-widget.js" 
+        data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+        data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+        data-title="Mobile Assistant"&gt;&lt;/script&gt;</pre>
+        </div>
+    </div>
+
+    <!-- MOBILE-OPTIMIZED WIDGET -->
+    <script src="../fluvio-universal-widget.js" 
+            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+            data-title="Mobile Assistant"
+            data-subtitle="Touch-Friendly AI"></script>
+</body>
+</html>

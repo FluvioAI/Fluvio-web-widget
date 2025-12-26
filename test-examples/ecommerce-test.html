@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Store - Sales Assistant Widget</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .nav {
+            display: flex;
+            gap: 2rem;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .product {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .product img {
+            width: 100%;
+            height: 200px;
+            background: #e9ecef;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        .price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #28a745;
+            margin: 0.5rem 0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-info {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            color: #155724;
+        }
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="status">🛒 E-commerce Test</div>
+    
+    <div class="header">
+        <div class="logo">TechStore Pro</div>
+        <nav class="nav">
+            <a href="#home">Home</a>
+            <a href="#products">Products</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="test-info">
+            <strong>🛒 E-commerce Test Scenario:</strong> Sales assistant widget on product page
+            <br><strong>Expected:</strong> Blue widget in top-right corner with "Sales Assistant" branding
+            <br><strong>Use Case:</strong> Help customers with product questions, recommendations, and purchase decisions
+        </div>
+
+        <h1>Featured Products</h1>
+        <p>Browse our latest tech products. Need help choosing? Click the Sales Assistant in the top-right corner!</p>
+
+        <div class="products">
+            <div class="product">
+                <div class="product img">📱 Product Image</div>
+                <h3>Smartphone Pro Max</h3>
+                <p>Latest flagship smartphone with advanced AI features</p>
+                <div class="price">$999.99</div>
+                <button class="btn">Add to Cart</button>
+            </div>
+            
+            <div class="product">
+                <div class="product img">💻 Product Image</div>
+                <h3>Laptop Ultra</h3>
+                <p>High-performance laptop for professionals</p>
+                <div class="price">$1,299.99</div>
+                <button class="btn">Add to Cart</button>
+            </div>
+            
+            <div class="product">
+                <div class="product img">🎧 Product Image</div>
+                <h3>Wireless Headphones</h3>
+                <p>Premium noise-canceling headphones</p>
+                <div class="price">$299.99</div>
+                <button class="btn">Add to Cart</button>
+            </div>
+            
+            <div class="product">
+                <div class="product img">⌚ Product Image</div>
+                <h3>Smart Watch</h3>
+                <p>Fitness tracking and smart notifications</p>
+                <div class="price">$399.99</div>
+                <button class="btn">Add to Cart</button>
+            </div>
+        </div>
+
+        <h2>Need Help Choosing?</h2>
+        <p>Our AI Sales Assistant can help you:</p>
+        <ul>
+            <li>Compare product features</li>
+            <li>Find the best product for your needs</li>
+            <li>Get technical specifications</li>
+            <li>Check availability and shipping</li>
+            <li>Apply discount codes</li>
+        </ul>
+
+        <h3>Widget Integration Code</h3>
+        <pre style="background: #f4f4f4; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+&lt;script src="../fluvio-universal-widget.js" 
+        data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+        data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+        data-color="#007BFF"
+        data-position="top-right"
+        data-title="Sales Assistant"
+        data-subtitle="Product Expert"&gt;&lt;/script&gt;</pre>
+    </div>
+
+    <!-- E-COMMERCE SALES WIDGET -->
+    <script src="../fluvio-universal-widget.js" 
+            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+            data-color="#007BFF"
+            data-position="top-right"
+            data-title="Sales Assistant"
+            data-subtitle="Product Expert"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branded Widget Test - Custom Colors & Position</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-info {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #ff6b35;
+            color: #856404;
+        }
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff6b35;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        h2, h3 {
+            color: #34495e;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            color: #495057;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="status">🎨 Branded Test Active</div>
+    
+    <div class="container">
+        <h1>🎨 Branded Widget Test</h1>
+        
+        <div class="test-info">
+            <strong>Test Scenario:</strong> Custom orange branding, bottom-left position
+            <br><strong>Expected:</strong> Orange floating button in bottom-left corner
+            <br><strong>Configuration:</strong> Orange color (#FF6B35), custom title "AcmeBot Assistant"
+        </div>
+
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Look for the ORANGE floating chat button in the BOTTOM-LEFT corner</li>
+            <li>Click the button to open the voice assistant panel</li>
+            <li>Verify the panel shows "AcmeBot Assistant" title</li>
+            <li>Notice the orange branding matches the website theme</li>
+            <li>Test the call functionality</li>
+        </ol>
+
+        <h2>AcmeBot Company Website</h2>
+        <p>Welcome to AcmeBot - your AI automation partner! This demo shows how our voice widget can be branded to match any company's visual identity.</p>
+        
+        <h3>Our Services</h3>
+        <ul>
+            <li>AI Voice Assistants</li>
+            <li>Customer Support Automation</li>
+            <li>Sales Lead Qualification</li>
+            <li>24/7 Virtual Receptionist</li>
+        </ul>
+        
+        <h3>Why Choose AcmeBot?</h3>
+        <p>Our voice assistants are powered by advanced AI technology, providing natural conversations that feel human-like. The orange branding you see matches our company colors perfectly!</p>
+
+        <h3>Widget Integration Code</h3>
+        <pre style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 4px; overflow-x: auto; color: #fff;">
+&lt;script src="../fluvio-universal-widget.js" 
+        data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+        data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+        data-color="#FF6B35"
+        data-position="bottom-left"
+        data-title="AcmeBot Assistant"
+        data-subtitle="AI-Powered Support"&gt;&lt;/script&gt;</pre>
+    </div>
+
+    <!-- BRANDED WIDGET IMPLEMENTATION -->
+    <script src="../fluvio-universal-widget.js" 
+            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+            data-color="#FF6B35"
+            data-position="bottom-left"
+            data-title="AcmeBot Assistant"
+            data-subtitle="AI-Powered Support"></script>
+</body>
+</html>
