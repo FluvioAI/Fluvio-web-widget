@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluvio Button Widget Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .demo-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .button-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .button-demo {
+            padding: 1.5rem;
+            border: 2px dashed #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .button-demo h4 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+        }
+        
+        .button-demo p {
+            margin: 0 0 1.5rem 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        /* Button Styles */
+        .fluvio-call-btn {
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .fluvio-call-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Primary Button */
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        
+        /* Success Button */
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+        
+        /* Orange Button */
+        .btn-orange {
+            background: #ff6b35;
+            color: white;
+        }
+        
+        .btn-orange:hover:not(:disabled) {
+            background: #e55a2b;
+            transform: translateY(-1px);
+        }
+        
+        /* Outline Button */
+        .btn-outline {
+            background: transparent;
+            color: #007bff;
+            border: 2px solid #007bff;
+        }
+        
+        .btn-outline:hover:not(:disabled) {
+            background: #007bff;
+            color: white;
+        }
+        
+        /* Large Button */
+        .btn-large {
+            font-size: 18px;
+            padding: 16px 32px;
+        }
+        
+        /* Small Button */
+        .btn-small {
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid #e9ecef;
+            color: #495057;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #2196f3;
+            color: #1565c0;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎧 Fluvio Button Widget Test</h1>
+            <p>Simple call buttons that can be placed anywhere on your website</p>
+        </div>
+
+        <div class="demo-section">
+            <div class="info-box">
+                <strong>🎯 Button Widget Features:</strong><br>
+                • Place anywhere on your site - no floating UI<br>
+                • Just initiates voice calls when clicked<br>
+                • Supports all dynamic variables<br>
+                • Works with existing page design<br>
+                • Multiple buttons per page supported
+            </div>
+
+            <h2>🧪 Live Button Examples</h2>
+            <p>Click any button below to test the voice call functionality:</p>
+
+            <div class="button-examples">
+                <div class="button-demo">
+                    <h4>Primary Button</h4>
+                    <p>Standard blue button with basic configuration</p>
+                    <button class="fluvio-call-btn btn-primary"
+                            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+                            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4">
+                        📞 Call Now
+                    </button>
+                </div>
+
+                <div class="button-demo">
+                    <h4>Success Button</h4>
+                    <p>Green button with company branding</p>
+                    <button class="fluvio-call-btn btn-success"
+                            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+                            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+                            data-company-name="TechCorp Solutions"
+                            data-agent-name="Alex"
+                            data-agent-title="Sales Representative">
+                        🎯 Get Support
+                    </button>
+                </div>
+
+                <div class="button-demo">
+                    <h4>Orange Button</h4>
+                    <p>Custom orange styling with dynamic variables</p>
+                    <button class="fluvio-call-btn btn-orange"
+                            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+                            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4"
+                            data-company-name="FluvioAI Realty"
+                            data-agent-name="Sarah"
+                            data-agent-title="Real Estate Agent"
+                            data-company-hours="Mon-Fri 9am-6pm"
+                            data-greeting="Hi! I'm {{AI_agent}} from {{company_name}}. Ready to find your dream home?">
+                        🏠 Talk to Agent
+                    </button>
+                </div>
+
+                <div class="button-demo">
+                    <h4>Outline Button</h4>
+                    <p>Minimal outline style</p>
+                    <button class="fluvio-call-btn btn-outline"
+                            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+                            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4">
+                        💬 Chat Now
+                    </button>
+                </div>
+
+                <div class="button-demo">
+                    <h4>Large Button</h4>
+                    <p>Bigger size for hero sections</p>
+                    <button class="fluvio-call-btn btn-primary btn-large"
+                            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+                            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4">
+                        🚀 Start Conversation
+                    </button>
+                </div>
+
+                <div class="button-demo">
+                    <h4>Small Button</h4>
+                    <p>Compact size for sidebars</p>
+                    <button class="fluvio-call-btn btn-success btn-small"
+                            data-webhook="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5"
+                            data-agent-id="agent_a4cb9032ec31e009d34b9be1a4">
+                        📞 Call
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📋 How to Use</h2>
+            
+            <h3>1. Basic Button</h3>
+            <div class="code-block">
+&lt;button class="fluvio-call-btn"
+        data-webhook="https://hook.us2.make.com/your-webhook"
+        data-agent-id="agent_your_id"&gt;
+    Call Now
+&lt;/button&gt;
+
+&lt;script src="https://fluvioai.github.io/Fluvio-web-widget/fluvio-button-widget.js"&gt;&lt;/script&gt;
+            </div>
+
+            <h3>2. Button with Dynamic Variables</h3>
+            <div class="code-block">
+&lt;button class="fluvio-call-btn"
+        data-webhook="https://hook.us2.make.com/your-webhook"
+        data-agent-id="agent_your_id"
+        data-company-name="Your Company"
+        data-agent-name="Sarah"
+        data-agent-title="Sales Rep"
+        data-greeting="Hi! I'm {{AI_agent}} from {{company_name}}. How can I help?"&gt;
+    Talk to {{AI_agent}}
+&lt;/button&gt;
+            </div>
+
+            <h3>3. Multiple Buttons (Different Agents)</h3>
+            <div class="code-block">
+&lt;!-- Sales Button --&gt;
+&lt;button class="fluvio-call-btn btn-primary"
+        data-webhook="https://hook.us2.make.com/sales-webhook"
+        data-agent-id="agent_sales_id"&gt;
+    Sales Inquiry
+&lt;/button&gt;
+
+&lt;!-- Support Button --&gt;
+&lt;button class="fluvio-call-btn btn-success"
+        data-webhook="https://hook.us2.make.com/support-webhook"
+        data-agent-id="agent_support_id"&gt;
+    Get Support
+&lt;/button&gt;
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>✨ Benefits</h2>
+            <ul>
+                <li><strong>No UI Changes:</strong> Just initiates calls, no panels or overlays</li>
+                <li><strong>Flexible Placement:</strong> Put buttons anywhere in your design</li>
+                <li><strong>Custom Styling:</strong> Style buttons to match your brand</li>
+                <li><strong>Multiple Agents:</strong> Different buttons can call different agents</li>
+                <li><strong>Dynamic Variables:</strong> Personalize each button's context</li>
+                <li><strong>Lightweight:</strong> Minimal JavaScript, loads fast</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎯 Use Cases</h2>
+            <ul>
+                <li><strong>E-commerce:</strong> "Talk to Sales" buttons on product pages</li>
+                <li><strong>Real Estate:</strong> "Call Agent" buttons on property listings</li>
+                <li><strong>Support:</strong> "Get Help" buttons in help sections</li>
+                <li><strong>Lead Generation:</strong> "Free Consultation" buttons on landing pages</li>
+                <li><strong>Booking:</strong> "Speak to Specialist" buttons on service pages</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load the Fluvio Button Widget -->
+    <script src="fluvio-button-widget.js"></script>
+
+    <script>
+        // Monitor button interactions
+        console.log('🧪 Button Widget Test Page Loaded');
+        console.log('🧪 Click any button above to test voice calls');
+        
+        // Add some visual feedback
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('fluvio-call-btn')) {
+                console.log('🧪 Button clicked:', e.target.textContent);
+            }
+        });
+    </script>
+</body>
+</html>
