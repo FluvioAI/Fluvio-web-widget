@@ -37,7 +37,9 @@
     agentName: currentScript?.getAttribute('data-agent-name') || '',
     agentTitle: currentScript?.getAttribute('data-agent-title') || '',
     companyAddress: currentScript?.getAttribute('data-company-address') || '',
-    greeting: currentScript?.getAttribute('data-greeting') || ''
+    greeting: currentScript?.getAttribute('data-greeting') || '',
+    // Chat UI configuration
+    chatGreeting: currentScript?.getAttribute('data-chat-greeting') || ''
   };
 
   // Prevent multiple instances
@@ -828,7 +830,7 @@
         <div id="fluvio-chat-container" class="${!showModeSelector || config.defaultMode === 'chat' ? 'active' : ''}">
           <div id="fluvio-chat-messages"></div>
           <div class="fluvio-typing-indicator" id="fluvio-typing-indicator">
-            <span>AI is typing</span>
+            <span>${(config.agentName || 'AI')} is typing...</span>
             <div class="fluvio-typing-dots">
               <div class="fluvio-typing-dot"></div>
               <div class="fluvio-typing-dot"></div>
@@ -993,6 +995,24 @@
     let currentMode = config.defaultMode;
     let currentChatId = null;
     let chatHistory = [];
+    let hasShownChatGreeting = false;
+
+    function getAgentDisplayName() {
+      const name = (config.agentName || '').trim();
+      return name || 'AI';
+    }
+
+    function ensureChatGreeting() {
+      if (hasShownChatGreeting) return;
+
+      // Prefer dedicated chat greeting, fall back to legacy greeting.
+      const greeting = ((config.chatGreeting || config.greeting) || '').trim();
+      if (!greeting) return;
+
+      // Only show greeting when entering chat the first time.
+      addChatMessage(greeting, 'agent');
+      hasShownChatGreeting = true;
+    }
 
     // Chat functionality
     async function startChatSession() {
@@ -1110,6 +1130,10 @@
     }
 
     function showTypingIndicator() {
+      const labelEl = elements.typingIndicator?.querySelector('span');
+      if (labelEl) {
+        labelEl.textContent = `${getAgentDisplayName()} is typing...`;
+      }
       elements.typingIndicator.classList.add('show');
       elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
     }
@@ -1235,6 +1259,9 @@
         if (mode === 'chat') {
           elements.chatContainer.style.display = 'block';
           elements.chatContainer.classList.add('active');
+
+          // Inject configurable greeting on first entry to chat.
+          ensureChatGreeting();
         } else {
           elements.chatContainer.style.display = 'none';
           elements.chatContainer.classList.remove('active');
@@ -1370,11 +1397,11 @@
       console.warn('Chat input not found');
     }
 
-    // Initialize chat with welcome message if in chat mode
+    // Initialize chat greeting if chat is the default mode.
     if (currentMode === 'chat' || config.mode === 'chat') {
-      console.log('Initializing chat with welcome message');
+      console.log('Initializing chat greeting');
       setTimeout(() => {
-        addChatMessage(config.greeting || 'Hello! How can I help you today?', 'agent');
+        ensureChatGreeting();
       }, 500);
     }
 
