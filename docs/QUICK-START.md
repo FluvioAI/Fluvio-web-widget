@@ -1,138 +1,147 @@
 # Quick Start Guide
 
-## 🚀 5-Minute Setup
-
-### Step 1: Choose Your Widget Type
-
-**Universal Widget (Floating Chat)**
-- Appears as floating button on any page
-- Best for: General website use, customer support
-
-**Button Widget (Custom Buttons)**  
-- Turn any button into a voice call button
-- Best for: Specific call-to-actions, custom designs
-
-### Step 2: Get Your Widget URLs
-
-After following the GitHub setup, your widgets will be at:
-```
-https://YOUR-USERNAME.github.io/voice-widgets/fluvio-universal-widget.js
-https://YOUR-USERNAME.github.io/voice-widgets/fluvio-button-widget.js
-```
-
-### Step 3: Add to Your Website
-
-#### Universal Widget
-```html
-<script src="https://YOUR-USERNAME.github.io/voice-widgets/fluvio-universal-widget.js" 
-        data-webhook="https://hook.us2.make.com/your-webhook"
-        data-agent-id="agent_your_agent_id"></script>
-```
-
-#### Button Widget
-```html
-<button class="fluvio-call-btn" 
-        data-webhook="https://hook.us2.make.com/your-webhook"
-        data-agent-id="agent_your_agent_id">Call Now</button>
-<script src="https://YOUR-USERNAME.github.io/voice-widgets/fluvio-button-widget.js"></script>
-```
-
-### Step 4: Configure Your Settings
-
-Replace these with your actual values:
-- `your-webhook` - Your Make.com webhook URL
-- `your_agent_id` - Your Retell AI agent ID
-
-## 🎨 Basic Customization
-
-### Colors and Branding
-```html
-<script src="your-widget-url" 
-        data-webhook="your-webhook"
-        data-agent-id="your-agent-id"
-        data-color="#YOUR-BRAND-COLOR"
-        data-title="Your Assistant Name"
-        data-company-name="Your Company"></script>
-```
-
-### Position (Universal Widget Only)
-```html
-data-position="bottom-right"    <!-- Default -->
-data-position="bottom-left"     <!-- Left side -->
-data-position="top-right"       <!-- Top right -->
-data-position="top-left"        <!-- Top left -->
-```
-
-### Transcript Control
-```html
-data-show-transcript="false"    <!-- Default: OFF -->
-data-show-transcript="true"     <!-- Default: ON -->
-```
-
-## 🧪 Testing
-
-1. **Test the demos first:**
-   - `examples/universal-demo.html`
-   - `examples/button-demo.html`
-
-2. **Check your implementation:**
-   - Widget appears correctly
-   - Clicking works (demo mode)
-   - Mobile responsive
-
-3. **Verify with real calls:**
-   - Update webhook and agent ID
-   - Test actual voice calls
-
-## 📱 Platform-Specific Instructions
-
-### WordPress
-Add to `functions.php` or use "Insert Headers and Footers" plugin
-
-### Shopify  
-Add to `theme.liquid` before `</body>` tag
-
-### Squarespace/Wix
-Use Code Injection or HTML embed blocks
-
-### React/Next.js
-```jsx
-useEffect(() => {
-  const script = document.createElement('script');
-  script.src = 'your-widget-url';
-  script.setAttribute('data-webhook', 'your-webhook');
-  script.setAttribute('data-agent-id', 'your-agent-id');
-  document.body.appendChild(script);
-}, []);
-```
-
-## ✅ Success Checklist
-
-- [ ] GitHub repository set up
-- [ ] Widget URLs working
-- [ ] Demo examples tested
-- [ ] Added to your website
-- [ ] Webhook and agent ID configured
-- [ ] Voice calls working
-- [ ] Mobile tested
-- [ ] Customized branding
-
-## 🆘 Common Issues
-
-**Widget not appearing:**
-- Check JavaScript URL loads (paste in browser)
-- Verify no JavaScript errors (F12 console)
-- Ensure script tag is before `</body>`
-
-**Calls not working:**
-- Verify webhook URL is correct
-- Check agent ID format
-- Test webhook separately
-
-**Styling conflicts:**
-- Check for CSS conflicts
-- Use browser dev tools to inspect
+Get the Fluvio widget running on your website in under 10 minutes.
 
 ---
 
-**Need more help?** Check the other guides in the `docs/` folder!
+## Before You Begin
+
+You will need three pieces of information from your Fluvio setup:
+
+1. **Webhook URL** — provided by your Make.com scenario (looks like `https://hook.us2.make.com/xxxxxxxx`)
+2. **Project ID** — your Fluvio project identifier (e.g. `ZWQ4VZV`)
+3. **Hosted widget URL** — the public URL where your widget file is hosted (see `GITHUB-SETUP-GUIDE.md` if you have not set this up yet)
+
+---
+
+## Step 1: Choose Your Widget Type
+
+**Universal Widget** — recommended for most websites
+- Appears as a floating button in the corner of the page
+- Visitors click it to open voice or chat
+
+**Button Widget** — for when you already have a button on your page
+- Converts an existing button into an AI call button
+- Useful for specific call-to-action sections
+
+---
+
+## Step 2: Add the Widget to Your Website
+
+Open your website's HTML file and paste the code just before the closing `</body>` tag.
+
+### Universal Widget (Floating Button)
+
+```html
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-mode="dual"
+        data-title="AI Assistant"
+        data-subtitle="Voice & Chat Support"></script>
+```
+
+### Button Widget
+
+Add the `fluvio-call-btn` class to an existing button, then load the script:
+
+```html
+<button class="fluvio-call-btn"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID">
+    Talk to an Agent
+</button>
+
+<script src="https://YOUR-HOSTING-URL/fluvio-button-widget.js"></script>
+```
+
+---
+
+## Step 3: Customize the Appearance
+
+Add any of the following options to personalize the widget:
+
+```html
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-mode="dual"
+        data-color="#347D9B"
+        data-title="Customer Support"
+        data-subtitle="We are here to help"
+        data-position="bottom-right"
+        data-agent-name="Sarah"
+        data-company-name="Acme Corp"></script>
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `data-color` | Brand color as a hex code | `#347D9B` |
+| `data-title` | Title shown in the widget header | `AI Assistant` |
+| `data-subtitle` | Subtitle shown below the title | `Voice & Chat Support` |
+| `data-position` | Corner where the widget appears | `bottom-right` |
+| `data-agent-name` | Name of your AI agent | — |
+| `data-company-name` | Your company name | — |
+| `data-mode` | `dual`, `voice`, or `chat` | `dual` |
+| `data-default-mode` | Which tab opens first: `voice` or `chat` | `voice` |
+
+### Position Options
+
+```
+bottom-right    bottom-left    top-right    top-left
+```
+
+---
+
+## Step 4: Test Before Going Live
+
+1. Open `index.html` in your browser to use the interactive configuration tester
+2. Enter your webhook URL and project ID
+3. Click "Update Widget" to see the live result
+4. Test both voice and chat to confirm your webhook is responding
+
+---
+
+## Platform-Specific Instructions
+
+### WordPress
+Install the "Insert Headers and Footers" plugin, then paste the script tag into the footer section.
+
+Alternatively, add it directly to your theme's `functions.php`:
+```php
+function add_fluvio_widget() {
+    echo '<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js" data-webhook="YOUR-WEBHOOK" data-project-id="YOUR-PROJECT-ID"></script>';
+}
+add_action('wp_footer', 'add_fluvio_widget');
+```
+
+### Shopify
+In your Shopify admin, go to **Online Store > Themes > Edit Code**, open `theme.liquid`, and paste the script tag just before `</body>`.
+
+### Squarespace
+Go to **Settings > Advanced > Code Injection**, and paste the script tag in the Footer section.
+
+### Wix
+Use the Wix **Embed HTML** element, or go to **Settings > Custom Code** and add the script to the body.
+
+---
+
+## Troubleshooting
+
+**The widget does not appear on the page**
+- Confirm the script URL is correct by opening it in a browser — you should see JavaScript code
+- Check that the script tag is placed before `</body>`, not inside `<head>`
+- Open the browser console (press F12) and look for any error messages
+
+**Voice or chat is not responding**
+- Verify your webhook URL is correct and the Make.com scenario is turned on
+- Test the webhook directly using the tester on `index.html`
+- Check that your project ID matches what is configured in Fluvio
+
+**The widget looks wrong on mobile**
+- Both widgets are mobile-responsive by default
+- If there is a conflict with your site's styles, contact your Fluvio team
+
+---
+
+For full configuration options, see `docs/CUSTOMIZATION.md`.

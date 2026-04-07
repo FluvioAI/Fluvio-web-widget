@@ -1,81 +1,53 @@
-# Fluvio Voice Widget - Client Package
+# Fluvio Web Widget
 
-## 📦 What's Included
+A lightweight, embeddable AI assistant widget that adds voice calling and text chat to any website — no development experience required.
 
-This package contains everything you need to deploy voice AI widgets to any website:
+## What It Does
 
-- **Core Widget Files** - The JavaScript files that power your voice widgets
-- **Setup Guide** - Step-by-step instructions (no technical experience needed)
-- **Test Examples** - Working examples you can try immediately
-- **Documentation** - Complete guides for customization and deployment
+The Fluvio widget appears as a small floating button on your website. When a visitor clicks it, a chat panel opens where they can either type a message or start a voice call with your AI assistant.
 
-## ✨ Latest Updates
+## What Is Included
 
-### Professional Lucide Icons
-- **Replaced all emojis** with professional Lucide icons for a modern, consistent look
-- **Better accessibility** and screen reader support
-- **Scalable SVG icons** that look perfect on all devices and screen sizes
-- **Automatic loading** of icon library with fallback support
+| File | Purpose |
+|------|---------|
+| `fluvio-universal-widget.js` | The widget itself — this is what you embed on your site |
+| `fluvio-button-widget.js` | An alternative that turns any existing button into an AI call button |
+| `index.html` | Interactive demo and configuration tester |
+| `GITHUB-SETUP-GUIDE.md` | Step-by-step instructions for hosting the widget online |
+| `WEBHOOK-MODIFICATION-GUIDE.md` | Technical guide for connecting the widget to Make.com |
+| `docs/QUICK-START.md` | Getting started in 5 minutes |
+| `docs/CUSTOMIZATION.md` | All available configuration options |
 
-## 🚀 Quick Start (Choose One)
+## How to Add the Widget to a Website
 
-### Option 1: GitHub Pages (Recommended - Free & Easy)
-Follow the **GITHUB-SETUP-GUIDE.md** for complete step-by-step instructions.
+Copy this single line of code and paste it into your website's HTML, just before the closing `</body>` tag:
 
-### Option 2: Your Existing Website
-Upload the `.js` files to your website and use the code examples in the guides.
-
-## 📁 Files Overview
-
-```
-CLIENT-DELIVERY/
-├── README.md                     # This file        
-├── GITHUB-SETUP-GUIDE.md         # Complete GitHub setup (no experience needed)
-├── fluvio-universal-widget.js    # Main floating chat widget (with Lucide icons)
-├── fluvio-button-widget.js       # Custom button widget (with Lucide icons)
-├── test-lucide-icons.html        # Demo of new professional icons
-├── test-examples/                # Working test examples
-│   ├── basic-test.html           # Floating widget demo
-│   ├── branded-test.html         # Floating widget demo
-│   ├── ecommerce-test.html       # Button widget demo
-│   └── mobile-test.html          # Mobile-friendly demo
-└── docs/                         # Complete documentation
-    ├── QUICK-START.md            # 5-minute setup guide
-    ├── CUSTOMIZATION.md          # Colors, branding, options
+```html
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-mode="dual"
+        data-title="AI Assistant"
+        data-subtitle="Voice & Chat Support"></script>
 ```
 
-## 🎯 Two Widget Types
+Replace `YOUR-HOSTING-URL`, `your-webhook-url`, and `YOUR-PROJECT-ID` with your actual values. Your Fluvio team can provide these.
 
-### 1. Universal Widget (Floating Chat)
-- Appears as floating button on any page
-- Opens chat panel when clicked
-- Perfect for general website use
+## Widget Modes
 
-### 2. Button Widget (Custom Buttons)
-- Turn any button into a voice call button
-- Fits into your existing design
-- Great for specific call-to-actions
+| Mode | What it shows |
+|------|--------------|
+| `dual` | Both voice and chat tabs (recommended) |
+| `voice` | Voice calling only |
+| `chat` | Text chat only |
 
-## ⚡ 5-Minute Test
+## Hosting the Widget
 
-1. Open `examples/universal-demo.html` in your browser
-2. Click the blue floating button
-3. Click "Call" to test (demo mode)
-4. See it working? You're ready to deploy!
+The widget file (`fluvio-universal-widget.js`) needs to be accessible via a public URL. The easiest option is GitHub Pages, which is free. Follow `GITHUB-SETUP-GUIDE.md` for step-by-step instructions.
 
-## 📞 Next Steps
+## Where to Start
 
-1. **Read GITHUB-SETUP-GUIDE.md** - Complete setup instructions
-2. **Test the examples** - Make sure everything works
-3. **Customize your widgets** - Colors, text, branding
-4. **Deploy to your websites** - Follow platform-specific guides
-
-## 🆘 Need Help?
-
-All documentation is included in the `docs/` folder. Start with:
-- `GITHUB-SETUP-GUIDE.md` - If you're new to GitHub
-- `QUICK-START.md` - If you want to get started fast
-
----
-
-**Ready to start?** Open **GITHUB-SETUP-GUIDE.md** for complete instructions!
+- **New to this?** Start with `GITHUB-SETUP-GUIDE.md`
+- **Already have hosting?** Go to `docs/QUICK-START.md`
+- **Want to change colors or text?** See `docs/CUSTOMIZATION.md`
+- **Setting up Make.com?** See `WEBHOOK-MODIFICATION-GUIDE.md`
