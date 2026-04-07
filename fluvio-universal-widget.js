@@ -49,7 +49,6 @@
   }
   window.FluvioWidgetLoaded = true;
 
-  console.log('Fluvio Universal Widget Loading...');
 
   // Load Lucide Icons
   function loadLucideIcons() {
@@ -63,12 +62,10 @@
       script.src = 'https://unpkg.com/lucide@latest/dist/umd/lucide.js';
       
       script.onload = () => {
-        console.log('Lucide icons loaded successfully');
         resolve();
       };
       
       script.onerror = () => {
-        console.warn('Failed to load Lucide icons, using fallback');
         resolve(); // Continue without icons
       };
       
@@ -86,7 +83,6 @@
         }
         return iconElement.outerHTML;
       } catch (e) {
-        console.warn('Failed to create Lucide icon:', iconName);
       }
     }
     
@@ -100,7 +96,6 @@
       try {
         window.lucide.createIcons();
       } catch (e) {
-        console.warn('Failed to initialize Lucide icons:', e);
       }
     }
   }
@@ -931,42 +926,34 @@
   // Load Retell SDK
   function loadRetellSDK() {
     return new Promise((resolve, reject) => {
-      console.log('Attempting to load Retell SDK from unpkg...');
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
       
       script.onload = () => {
-        console.log('Retell SDK loaded from unpkg');
         resolve();
       };
       
       script.onerror = () => {
-        console.log('unpkg failed, trying jsdelivr...');
         // Fallback to jsdelivr
         const script2 = document.createElement('script');
         script2.src = 'https://cdn.jsdelivr.net/npm/retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
         
         script2.onload = () => {
-          console.log('Retell SDK loaded from jsdelivr');
           resolve();
         };
         
         script2.onerror = () => {
-          console.log('jsdelivr failed, trying skypack...');
           // Fallback to skypack with dynamic import
           import('https://cdn.skypack.dev/retell-client-js-sdk')
             .then(({ RetellWebClient }) => {
               window.RetellWebClient = RetellWebClient;
-              console.log('Retell SDK loaded from skypack');
               resolve();
             })
             .catch(err => {
-              console.log('skypack failed, trying esm.sh...');
               // Final fallback to esm.sh
               import('https://esm.sh/retell-client-js-sdk')
                 .then(({ RetellWebClient }) => {
                   window.RetellWebClient = RetellWebClient;
-                  console.log('Retell SDK loaded from esm.sh');
                   resolve();
                 })
                 .catch(finalErr => {
@@ -1019,7 +1006,6 @@
     // Chat functionality
     async function startChatSession() {
       try {
-        console.log('Creating new chat session...');
         const response = await fetch(config.webhook, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1050,7 +1036,6 @@
           throw new Error('No chat ID received from webhook');
         }
 
-        console.log('Chat session created:', currentChatId);
         return currentChatId;
       } catch (error) {
         console.error('Failed to start chat session:', error);
@@ -1060,7 +1045,6 @@
 
     async function sendChatMessage(message) {
       try {
-        console.log('Sending chat message:', message, 'to chat_id:', currentChatId);
         
         const response = await fetch(config.webhook, {
           method: 'POST',
@@ -1079,7 +1063,6 @@
         }
 
         const data = await response.json();
-        console.log('Chat response received:', data);
         
         // Return the messages array from the response
         return data.messages || [];
@@ -1090,7 +1073,6 @@
     }
 
     function addChatMessage(content, role = 'user') {
-      console.log('Adding chat message:', { content, role, hasMessagesContainer: !!elements.chatMessages });
       
       if (!elements.chatMessages) {
         console.error('Chat messages container not found!');
@@ -1100,7 +1082,6 @@
       // Check if chat container is visible
       const chatContainer = elements.chatContainer;
       const computedStyle = window.getComputedStyle(chatContainer);
-      console.log('Chat container visibility check:', {
         display: computedStyle.display,
         visibility: computedStyle.visibility,
         opacity: computedStyle.opacity,
@@ -1127,8 +1108,6 @@
       }, 10);
       
       chatHistory.push({ role, content, timestamp: Date.now() });
-      console.log('Message added to chat. Total messages:', elements.chatMessages.children.length);
-      console.log('Message element created:', messageDiv.outerHTML);
     }
 
     function showTypingIndicator() {
@@ -1148,7 +1127,6 @@
       const message = elements.chatInput.value.trim();
       if (!message) return;
 
-      console.log('Chat message being sent:', message);
 
       // Add user message to UI
       addChatMessage(message, 'user');
@@ -1161,7 +1139,6 @@
       try {
         // Check if we're in demo mode
         if (demoMode || !config.projectId || config.projectId.includes('demo') || config.webhook.includes('httpbin.org')) {
-          console.log('Chat running in demo mode');
           setTimeout(() => {
             hideTypingIndicator();
             
@@ -1180,36 +1157,27 @@
         }
 
         // Real chat implementation
-        console.log('Starting real chat session...');
         
         // Create chat session if we don't have one
         if (!currentChatId) {
-          console.log('No existing chat session, creating new one...');
           await startChatSession();
         }
 
         // Send message and get response
-        console.log('Sending message to chat session...');
         const response = await sendChatMessage(message);
         
         hideTypingIndicator();
         
         // Process and display agent responses
-        console.log('Processing chat response:', response);
         
         if (response && response.length > 0) {
-          console.log(`Processing ${response.length} messages`);
           response.forEach((msg, index) => {
-            console.log(`Processing message ${index}:`, msg);
             if (msg.role === 'agent' && msg.content) {
-              console.log('Adding agent message to chat:', msg.content);
               addChatMessage(msg.content, 'agent');
             } else {
-              console.log('Skipping message - role:', msg.role, 'has content:', !!msg.content);
             }
           });
         } else {
-          console.log('No messages in response, using fallback');
           addChatMessage('I received your message. Let me help you with that.', 'agent');
         }
         
@@ -1236,7 +1204,6 @@
 
     function switchMode(mode) {
       currentMode = mode;
-      console.log('Switching to mode:', mode);
       
       // Update mode selector buttons
       if (elements.modeSelector) {
@@ -1254,7 +1221,6 @@
           elements.voiceContainer.style.display = 'none';
           elements.voiceContainer.classList.remove('active');
         }
-        console.log('Voice container display:', elements.voiceContainer.style.display);
       }
       
       if (elements.chatContainer) {
@@ -1268,26 +1234,19 @@
           elements.chatContainer.style.display = 'none';
           elements.chatContainer.classList.remove('active');
         }
-        console.log('Chat container display:', elements.chatContainer.style.display);
-        console.log('Chat container classes:', elements.chatContainer.className);
       }
       
-      console.log('Mode switched to:', mode);
     }
 
     try {
       // Try to find RetellWebClient
       if (window.RetellSDK && window.RetellSDK.RetellWebClient) {
         RetellWebClient = window.RetellSDK.RetellWebClient;
-        console.log('Found RetellWebClient in window.RetellSDK');
       } else if (window.RetellWebClient) {
         RetellWebClient = window.RetellWebClient;
-        console.log('Found RetellWebClient in window');
       } else if (window.Retell && window.Retell.RetellWebClient) {
         RetellWebClient = window.Retell.RetellWebClient;
-        console.log('Found RetellWebClient in window.Retell');
       } else {
-        console.warn('RetellWebClient not found - enabling demo mode');
         demoMode = true;
       }
 
@@ -1300,10 +1259,8 @@
       elements.statusEl.className = demoMode ? 'connecting' : 'offline';
       elements.callButton.disabled = false;
 
-      console.log('Widget initialized successfully' + (demoMode ? ' (Demo Mode)' : ''));
 
     } catch (error) {
-      console.warn('SDK initialization failed, enabling demo mode:', error);
       demoMode = true;
       elements.statusEl.textContent = 'Demo Mode';
       elements.statusEl.className = 'connecting';
@@ -1312,7 +1269,6 @@
 
     // Event handlers
     elements.fab.addEventListener('click', (e) => {
-      console.log('FAB clicked');
       
       const isVisible = elements.panel.style.display === 'block';
       if (isVisible) {
@@ -1330,7 +1286,6 @@
     elements.fab.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        console.log('FAB keyboard activated');
         elements.fab.click();
       }
     });
@@ -1350,7 +1305,6 @@
     });
 
     document.getElementById('fluvio-close').addEventListener('click', (e) => {
-      console.log('Close button clicked');
       elements.panel.style.display = 'none';
     });
 
@@ -1366,18 +1320,14 @@
 
     // Chat event handlers
     if (elements.chatSend) {
-      console.log('Attaching chat send button event handler');
       elements.chatSend.addEventListener('click', handleChatMessage);
     } else {
-      console.warn('Chat send button not found');
     }
 
     if (elements.chatInput) {
-      console.log('Attaching chat input event handlers');
       elements.chatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
-          console.log('Enter key pressed in chat input');
           handleChatMessage();
         }
       });
@@ -1396,18 +1346,15 @@
         }
       });
     } else {
-      console.warn('Chat input not found');
     }
 
     // Initialize chat greeting if chat is the default mode.
     if (currentMode === 'chat' || config.mode === 'chat') {
-      console.log('Initializing chat greeting');
       setTimeout(() => {
         ensureChatGreeting();
       }, 500);
     }
 
-    console.log('Widget initialization complete', {
       currentMode,
       hasVoiceContainer: !!elements.voiceContainer,
       hasChatContainer: !!elements.chatContainer,
@@ -1429,21 +1376,17 @@
       // Show/hide transcript
       transcriptDiv.style.display = transcriptEnabled ? 'block' : 'none';
       
-      console.log('Transcript toggled:', transcriptEnabled ? 'ON' : 'OFF');
     });
 
     elements.callButton.addEventListener('click', async (e) => {
-      console.log('Call button clicked');
       
       if (elements.callButton.disabled) {
-        console.log('Call button is disabled, ignoring click');
         return;
       }
       
       if (demoMode) {
         // Demo mode simulation
         if (!isCallActive) {
-          console.log('Demo: Starting simulated call...');
           elements.statusEl.textContent = 'Connecting...';
           elements.statusEl.className = 'connecting';
           elements.callButton.disabled = true;
@@ -1468,10 +1411,8 @@
               transcriptDiv.textContent = 'Demo Mode: This is a simulation.\n\nIn production, this would show real-time conversation transcripts between you and the AI agent.\n\nThe actual voice calls work with your Retell AI agent when the SDK loads properly.';
             }
             
-            console.log('Demo: Call connected');
           }, 1500);
         } else {
-          console.log('Demo: Ending simulated call...');
           elements.statusEl.textContent = 'Demo Mode';
           elements.statusEl.className = 'connecting';
           isCallActive = false;
@@ -1491,14 +1432,12 @@
       // Real Retell functionality
       if (!isCallActive) {
         try {
-          console.log('Starting real call...');
           elements.statusEl.textContent = 'Connecting...';
           elements.statusEl.className = 'connecting';
           elements.callButton.disabled = true;
 
           // Check if webhook URL is a placeholder
           if (config.webhook.includes('your-webhook') || config.webhook.includes('httpbin.org')) {
-            console.log('Demo webhook detected, simulating call...');
             // Simulate demo call for testing
             setTimeout(() => {
               elements.statusEl.textContent = 'Connected (Demo)';
@@ -1568,10 +1507,8 @@
 
           if (webhookData.call_inbound && webhookData.call_inbound.dynamic_variables) {
             callOptions.retell_llm_dynamic_variables = webhookData.call_inbound.dynamic_variables;
-            console.log('Dynamic variables included:', webhookData.call_inbound.dynamic_variables);
           }
 
-          console.log('Starting call with options:', callOptions);
           await client.startCall(callOptions);
 
         } catch (error) {
@@ -1592,7 +1529,6 @@
           elements.callButton.disabled = false;
         }
       } else {
-        console.log('Ending real call...');
         if (client && client.stopCall) {
           client.stopCall();
         } else {
@@ -1616,7 +1552,6 @@
     // Retell event listeners (only if not in demo mode)
     if (!demoMode && client) {
       client.on('call_started', () => {
-        console.log('Call started');
         elements.statusEl.textContent = 'Connected';
         elements.statusEl.className = 'online';
         isCallActive = true;
@@ -1633,7 +1568,6 @@
       });
 
       client.on('call_ended', () => {
-        console.log('Call ended');
         elements.statusEl.textContent = 'Offline';
         elements.statusEl.className = 'offline';
         isCallActive = false;
@@ -1716,16 +1650,13 @@
       if (config.mode === 'voice' || config.mode === 'dual') {
         try {
           await loadRetellSDK();
-          console.log('SDK loaded successfully, voice functionality enabled');
         } catch (error) {
-          console.warn('SDK loading failed, voice will run in demo mode:', error.message);
         }
       }
 
       // Initialize widget
       initializeWidget(elements);
 
-      console.log('Fluvio Universal Widget ready!', {
         mode: config.mode,
         projectId: config.projectId,
         defaultMode: config.defaultMode
