@@ -385,9 +385,11 @@
         border-radius: 8px;
         font-size: 14px;
         resize: none;
-        min-height: 20px;
-        max-height: 80px;
+        min-height: 44px;
+        max-height: 120px;
         font-family: inherit;
+        box-sizing: border-box;
+        overflow-y: auto;
       }
 
       #fluvio-chat-input:focus {
@@ -685,7 +687,7 @@
         }
 
         #fluvio-chat-input {
-          max-height: 60px !important;
+          max-height: 96px !important;
           font-size: 16px; /* Prevents zoom on iOS */
         }
 
@@ -1383,7 +1385,7 @@
       // Auto-resize textarea
       elements.chatInput.addEventListener('input', (e) => {
         e.target.style.height = 'auto';
-        const newHeight = Math.min(e.target.scrollHeight, 30); // Reduced from 100px to 80px
+        const newHeight = Math.min(e.target.scrollHeight, 120);
         e.target.style.height = newHeight + 'px';
         
         // Reposition panel if it's visible and might overflow

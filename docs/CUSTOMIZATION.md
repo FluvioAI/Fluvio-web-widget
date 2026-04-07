@@ -1,256 +1,220 @@
 # Customization Guide
 
-## 🎨 Universal Widget Options
+All widget options are set directly in the script tag using `data-` attributes. No coding knowledge is required — simply change the values to match your brand.
 
-### Basic Configuration
+---
+
+## Universal Widget — All Options
+
 ```html
-<script src="your-widget-url" 
-        data-webhook="https://hook.us2.make.com/your-webhook"
-        data-agent-id="agent_your_agent_id"
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-mode="dual"
+        data-default-mode="voice"
         data-color="#347D9B"
         data-position="bottom-right"
-        data-title="Voice Assistant"
-        data-subtitle="Live Voice Agent"
-        data-show-transcript="false"></script>
+        data-title="AI Assistant"
+        data-subtitle="Voice & Chat Support"
+        data-agent-name="Sarah"
+        data-company-name="Acme Corp"
+        data-company-hours="Mon–Fri, 9am–6pm"
+        data-greeting="Hi! I am Sarah from Acme Corp. How can I help you today?"></script>
 ```
 
-### All Available Options
+### Complete Options Reference
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `data-webhook` | Required | Your Make.com webhook URL |
-| `data-agent-id` | Required | Your Retell AI agent ID |
-| `data-color` | `#347D9B` | Primary color (hex code) |
-| `data-position` | `bottom-right` | Widget position |
-| `data-title` | `Voice Assistant` | Panel title |
-| `data-subtitle` | `Live Voice Agent` | Panel subtitle |
-| `data-show-transcript` | `false` | Show transcript by default |
+| Option | Required | Default | Description |
+|--------|----------|---------|-------------|
+| `data-webhook` | Yes | — | Your Make.com webhook URL |
+| `data-project-id` | Yes | — | Your Fluvio project ID |
+| `data-mode` | No | `dual` | Widget mode: `dual`, `voice`, or `chat` |
+| `data-default-mode` | No | `voice` | Which tab opens first: `voice` or `chat` |
+| `data-color` | No | `#347D9B` | Primary brand color (hex format) |
+| `data-position` | No | `bottom-right` | Corner of the screen: `bottom-right`, `bottom-left`, `top-right`, `top-left` |
+| `data-title` | No | `AI Assistant` | Title shown in the widget header |
+| `data-subtitle` | No | `Voice & Chat Support` | Subtitle shown below the title |
+| `data-agent-name` | No | `AI` | Name of your AI agent |
+| `data-company-name` | No | — | Your company name |
+| `data-company-hours` | No | — | Business hours, shown to the visitor |
+| `data-company-address` | No | — | Your business address |
+| `data-greeting` | No | — | Opening message shown when chat starts |
 
-### Position Options
-- `bottom-right` (default)
-- `bottom-left`
-- `top-right`
-- `top-left`
+---
 
-### Color Examples
+## Choosing a Color
+
+Set `data-color` to any hex color code. A few examples:
+
 ```html
-<!-- Blue (default) -->
-data-color="#347D9B"
-
-<!-- Green -->
-data-color="#28a745"
-
-<!-- Orange -->
-data-color="#ff6b35"
-
-<!-- Purple -->
-data-color="#6f42c1"
-
-<!-- Custom brand color -->
-data-color="#YOUR-HEX-COLOR"
+data-color="#347D9B"   <!-- Fluvio default blue -->
+data-color="#1a73e8"   <!-- Google blue -->
+data-color="#0f9d58"   <!-- Green -->
+data-color="#e53935"   <!-- Red -->
+data-color="#6200ea"   <!-- Purple -->
+data-color="#FF6B35"   <!-- Orange -->
 ```
 
-## 🔘 Button Widget Options
+To find your brand's exact color code, search for "[your brand name] brand colors hex" or ask your designer.
 
-### Basic Button
+---
+
+## Writing a Custom Greeting
+
+The greeting is the first message visitors see when they open the chat tab. Use these placeholders and they will be filled in automatically:
+
+| Placeholder | Replaced with |
+|-------------|--------------|
+| `{{AI_agent}}` | The value of `data-agent-name` |
+| `{{company_name}}` | The value of `data-company-name` |
+| `{{AI_agent_title}}` | The value of `data-agent-title` |
+| `{{company_hours}}` | The value of `data-company-hours` |
+
+### Greeting Examples
+
 ```html
-<button class="fluvio-call-btn" 
-        data-webhook="https://hook.us2.make.com/your-webhook"
-        data-agent-id="agent_your_agent_id">Call Now</button>
+<!-- General purpose -->
+data-greeting="Hello! I am {{AI_agent}} from {{company_name}}. How can I help you today?"
+
+<!-- Customer support -->
+data-greeting="Welcome to {{company_name}} support. I am {{AI_agent}} and I am here to help."
+
+<!-- Real estate -->
+data-greeting="Hi! I am {{AI_agent}}, your agent at {{company_name}}. What property can I help you with?"
+
+<!-- After hours -->
+data-greeting="Thanks for reaching out. Our team is available {{company_hours}}. How can I assist you?"
 ```
 
-### All Available Options
+---
 
-| Option | Description |
-|--------|-------------|
-| `data-webhook` | Your Make.com webhook URL |
-| `data-agent-id` | Your Retell AI agent ID |
-| `data-company-name` | Company name for personalization |
-| `data-agent-name` | AI agent name |
-| `data-agent-title` | Agent title/role |
-| `data-company-number` | Company phone number |
-| `data-company-hours` | Business hours |
-| `data-company-address` | Company address |
-| `data-greeting` | Custom greeting message |
+## Button Widget — All Options
 
-### Dynamic Variables Example
+The button widget converts any HTML button into an AI call button.
+
 ```html
-<button class="fluvio-call-btn" 
-        data-webhook="your-webhook"
-        data-agent-id="your-agent-id"
-        data-company-name="TechCorp Solutions"
+<button class="fluvio-call-btn"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-company-name="Acme Corp"
         data-agent-name="Sarah"
         data-agent-title="Sales Representative"
-        data-company-hours="Mon-Fri 9am-6pm"
-        data-greeting="Hi! I'm {{AI_agent}} from {{company_name}}. How can I help you today?">
-    Talk to {{AI_agent}}
+        data-company-hours="Mon–Fri, 9am–6pm"
+        data-greeting="Hi! I am {{AI_agent}}, {{AI_agent_title}} at {{company_name}}. How can I help?">
+    Talk to Sales
 </button>
+
+<script src="https://YOUR-HOSTING-URL/fluvio-button-widget.js"></script>
 ```
 
-### Button Styling
+### Styling the Button
+
+By default the button inherits your website's styles. To apply a custom look, add CSS:
+
 ```css
-/* Custom button styles */
 .fluvio-call-btn {
-    background: #your-color;
+    background-color: #347D9B;
     color: white;
     border: none;
     padding: 12px 24px;
     border-radius: 8px;
     font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .fluvio-call-btn:hover {
-    background: #darker-shade;
-    transform: translateY(-1px);
+    background-color: #2a6480;
 }
-```
 
-## 🏢 Dynamic Variables
-
-Use these variables in your `data-greeting` and other text:
-
-| Variable | Usage |
-|----------|-------|
-| `{{AI_agent}}` | Agent name |
-| `{{company_name}}` | Company name |
-| `{{AI_agent_title}}` | Agent title |
-| `{{company_number}}` | Phone number |
-| `{{company_hours}}` | Business hours |
-| `{{company_address}}` | Address |
-
-### Example Greetings
-```html
-<!-- Professional -->
-data-greeting="Hello! I'm {{AI_agent}}, {{AI_agent_title}} at {{company_name}}. How can I assist you?"
-
-<!-- Casual -->
-data-greeting="Hi there! {{AI_agent}} here from {{company_name}}. What can I help you with?"
-
-<!-- Real Estate -->
-data-greeting="Welcome! I'm {{AI_agent}}, your {{AI_agent_title}} at {{company_name}}. Ready to find your dream home?"
-
-<!-- Support -->
-data-greeting="Hi! I'm {{AI_agent}} from {{company_name}} support. I'm here to help resolve any issues you have."
-```
-
-## 🎯 Use Case Examples
-
-### E-commerce Product Page
-```html
-<button class="fluvio-call-btn product-call-btn" 
-        data-webhook="your-webhook"
-        data-agent-id="agent_sales_id"
-        data-company-name="ShopCorp"
-        data-agent-name="Mike"
-        data-agent-title="Sales Specialist"
-        data-greeting="Hi! I'm {{AI_agent}}, a {{AI_agent_title}} at {{company_name}}. I can help you with this product!">
-    🛒 Talk to Sales
-</button>
-```
-
-### Real Estate Listing
-```html
-<button class="fluvio-call-btn property-btn" 
-        data-webhook="your-webhook"
-        data-agent-id="agent_realty_id"
-        data-company-name="Prime Realty"
-        data-agent-name="Sarah"
-        data-agent-title="Real Estate Agent"
-        data-greeting="Hi! I'm {{AI_agent}} from {{company_name}}. I'd love to tell you more about this property!">
-    🏠 Call Agent
-</button>
-```
-
-### Support Page
-```html
-<button class="fluvio-call-btn support-btn" 
-        data-webhook="your-webhook"
-        data-agent-id="agent_support_id"
-        data-company-name="TechSupport Inc"
-        data-agent-name="Alex"
-        data-agent-title="Technical Support"
-        data-company-hours="24/7 Support Available"
-        data-greeting="Hello! I'm {{AI_agent}} from {{company_name}} {{AI_agent_title}}. How can I help resolve your issue?">
-    🔧 Get Help
-</button>
-```
-
-## 📱 Mobile Optimization
-
-Both widgets are mobile-responsive by default, but you can customize:
-
-### Universal Widget Mobile
-```css
-/* Custom mobile styles */
-@media (max-width: 768px) {
-    #fluvio-fab {
-        width: 52px;
-        height: 52px;
-        bottom: 16px;
-        right: 16px;
-    }
-    
-    #fluvio-panel {
-        width: calc(100vw - 24px);
-        right: 12px;
-        left: 12px;
-    }
-}
-```
-
-### Button Widget Mobile
-```css
+/* Full-width on mobile */
 @media (max-width: 768px) {
     .fluvio-call-btn {
         width: 100%;
         padding: 16px;
-        font-size: 18px;
     }
 }
-```
-
-## 🔧 Advanced Customization
-
-### Multiple Agents
-```html
-<!-- Sales Button -->
-<button class="fluvio-call-btn" 
-        data-webhook="https://hook.us2.make.com/sales-webhook"
-        data-agent-id="agent_sales_id">Sales Inquiry</button>
-
-<!-- Support Button -->
-<button class="fluvio-call-btn" 
-        data-webhook="https://hook.us2.make.com/support-webhook"
-        data-agent-id="agent_support_id">Get Support</button>
-```
-
-### Conditional Loading
-```javascript
-// Load widget only on certain pages
-if (window.location.pathname.includes('/contact')) {
-    const script = document.createElement('script');
-    script.src = 'your-widget-url';
-    script.setAttribute('data-webhook', 'your-webhook');
-    script.setAttribute('data-agent-id', 'your-agent-id');
-    document.body.appendChild(script);
-}
-```
-
-### Custom Events
-```javascript
-// Listen for widget events
-document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('fluvio-call-btn')) {
-        // Track button clicks
-        gtag('event', 'voice_call_started', {
-            'button_text': e.target.textContent
-        });
-    }
-});
 ```
 
 ---
 
-**Need more examples?** Check the demo files in the `examples/` folder!
+## Industry Examples
+
+### E-commerce — Product Page Call Button
+
+```html
+<button class="fluvio-call-btn"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-company-name="ShopCorp"
+        data-agent-name="Mike"
+        data-agent-title="Sales Specialist"
+        data-greeting="Hi! I am {{AI_agent}}, a {{AI_agent_title}} at {{company_name}}. I can answer questions about this product.">
+    Talk to a Specialist
+</button>
+<script src="https://YOUR-HOSTING-URL/fluvio-button-widget.js"></script>
+```
+
+### Real Estate — Property Listing
+
+```html
+<button class="fluvio-call-btn"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-company-name="Prime Realty"
+        data-agent-name="Sarah"
+        data-agent-title="Real Estate Agent"
+        data-greeting="Hi! I am {{AI_agent}} from {{company_name}}. I would love to tell you more about this property.">
+    Speak with an Agent
+</button>
+<script src="https://YOUR-HOSTING-URL/fluvio-button-widget.js"></script>
+```
+
+### Support Page — Floating Widget
+
+```html
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-mode="chat"
+        data-color="#0f9d58"
+        data-title="Support"
+        data-subtitle="We reply instantly"
+        data-agent-name="Alex"
+        data-greeting="Hello! I am {{AI_agent}} from support. How can I help resolve your issue?"></script>
+```
+
+### Multiple Widgets on One Page
+
+You can use multiple button widgets on the same page — for example, separate buttons for sales and support:
+
+```html
+<!-- Sales button -->
+<button class="fluvio-call-btn"
+        data-webhook="https://hook.us2.make.com/sales-webhook"
+        data-project-id="SALES-PROJECT-ID"
+        data-agent-name="Mike">
+    Talk to Sales
+</button>
+
+<!-- Support button -->
+<button class="fluvio-call-btn"
+        data-webhook="https://hook.us2.make.com/support-webhook"
+        data-project-id="SUPPORT-PROJECT-ID"
+        data-agent-name="Alex">
+    Contact Support
+</button>
+
+<script src="https://YOUR-HOSTING-URL/fluvio-button-widget.js"></script>
+```
+
+---
+
+## Mobile Behavior
+
+Both widgets automatically adjust their layout for mobile screens. No extra configuration is needed. The widget panel will resize to fit smaller screens, and the font size increases slightly to prevent iOS from zooming in when the input is tapped.
+
+---
+
+For setup instructions, see `docs/QUICK-START.md`.
+For hosting instructions, see `GITHUB-SETUP-GUIDE.md`.

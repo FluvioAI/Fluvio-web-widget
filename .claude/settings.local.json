@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude init:*)",
+      "Bash(wc -l /c/Users/DELL/Documents/Fluvio-web-widget/*.js)",
+      "Bash(grep -n \"chat.*input\\\\|textarea\\\\|input.*type\" /c/Users/DELL/Documents/Fluvio-web-widget/*.html)"
+    ]
+  }
+}

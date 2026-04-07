@@ -3,342 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project ID Widget Test</title>
+    <title>Fluvio Widget — Live Configuration Test</title>
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 32px 20px;
+            background: #f0f4f8;
             min-height: 100vh;
-            color: white;
+            color: #1a2332;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        .page-header {
+            margin-bottom: 40px;
         }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+
+        .page-header h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #1a2332;
+            margin: 0 0 8px 0;
         }
-        .config-panel {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 30px;
+
+        .page-header p {
+            color: #64748b;
+            margin: 0;
+            font-size: 0.95rem;
         }
-        .config-panel h2 {
-            margin-top: 0;
-            color: #fff;
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 28px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
         }
-        .form-group {
-            margin-bottom: 20px;
+
+        .card h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            color: #1a2332;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #fff;
+
+        .card .desc {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin: 0 0 20px 0;
         }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        .form-group input::placeholder {
-            color: rgba(255,255,255,0.7);
-        }
-        .form-row {
+
+        .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 16px;
         }
-        .update-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 10px;
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
         }
-        .update-btn:hover {
-            background: #218838;
-        }
-        .test-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 10px 5px;
-        }
-        .test-btn:hover {
-            background: #0056b3;
-        }
-        .status-panel {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            border: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 30px;
-        }
-        .status-item {
+
+        .form-group {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-direction: column;
+            gap: 5px;
         }
-        .status-item:last-child {
-            border-bottom: none;
-        }
-        .status-value {
+
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label {
+            font-size: 0.85rem;
             font-weight: 600;
+            color: #374151;
         }
-        .status-value.good { color: #28a745; }
-        .status-value.warning { color: #ffc107; }
-        .status-value.error { color: #dc3545; }
-        .response-box {
-            background: rgba(0,0,0,0.3);
+
+        input, select {
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
-            padding: 15px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            margin: 10px 0;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .success { background: rgba(40, 167, 69, 0.2); border: 1px solid #28a745; }
-        .error { background: rgba(220, 53, 69, 0.2); border: 1px solid #dc3545; }
-        .example-config {
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            font-family: monospace;
             font-size: 14px;
+            color: #1a2332;
+            background: #fff;
         }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #347D9B;
+            box-shadow: 0 0 0 3px rgba(52,125,155,0.15);
+        }
+
+        input[type="color"] {
+            padding: 4px 8px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary { background: #347D9B; color: white; }
+        .btn-primary:hover { background: #2a6480; }
+        .btn-test { background: #f1f5f9; color: #374151; border: 1px solid #d1d5db; }
+        .btn-test:hover { background: #e2e8f0; }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+        }
+
+        .status-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+
+        .status-value { font-size: 0.95rem; font-weight: 700; }
+        .ok { color: #16a34a; }
+        .warn { color: #d97706; }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            overflow-x: auto;
+        }
+
+        .request-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .request-grid { grid-template-columns: 1fr; }
+        }
+
+        .request-block h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #374151;
+            margin: 0 0 8px 0;
+        }
+
+        .result-box {
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            margin-top: 14px;
+        }
+
+        .result-box.success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+        .result-box.error { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Project ID Widget Test</h1>
-        
-        <div class="config-panel">
-            <h2>Updated Configuration (Project ID)</h2>
-            <p>The widget now uses <code>project_id</code> instead of separate agent IDs:</p>
-            
-            <div class="form-group">
-                <label for="webhookUrl">Make.com Webhook URL:</label>
-                <input type="url" id="webhookUrl" placeholder="https://hook.us2.make.com/your-webhook" 
-                       value="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5">
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="projectId">Project ID:</label>
-                    <input type="text" id="projectId" placeholder="ZWQ4VZV" 
-                           value="ZWQ4VZV">
+
+        <div class="page-header">
+            <h1>Live Configuration Test</h1>
+            <p>Enter your webhook URL and project ID to test the widget with your real configuration.</p>
+        </div>
+
+        <!-- Config Form -->
+        <div class="card">
+            <h2>Configuration</h2>
+            <p class="desc">Fill in your details and click "Apply" to reload the widget with your settings.</p>
+
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="webhookUrl">Make.com Webhook URL</label>
+                    <input type="url" id="webhookUrl"
+                           placeholder="https://hook.us2.make.com/your-webhook-url"
+                           value="https://hook.us2.make.com/8inld3fbsnclj96ucur12awsbyjmsxb5">
                 </div>
+
                 <div class="form-group">
-                    <label for="widgetMode">Widget Mode:</label>
+                    <label for="projectId">Project ID</label>
+                    <input type="text" id="projectId" placeholder="ZWQ4VZV" value="ZWQ4VZV">
+                </div>
+
+                <div class="form-group">
+                    <label for="widgetColor">Brand Color</label>
+                    <input type="color" id="widgetColor" value="#347D9B">
+                </div>
+
+                <div class="form-group">
+                    <label for="widgetMode">Widget Mode</label>
                     <select id="widgetMode">
-                        <option value="dual">Dual (Voice + Chat)</option>
-                        <option value="voice">Voice Only</option>
-                        <option value="chat">Chat Only</option>
+                        <option value="dual">Voice + Chat</option>
+                        <option value="voice">Voice only</option>
+                        <option value="chat">Chat only</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="form-row">
+
                 <div class="form-group">
-                    <label for="defaultMode">Default Mode:</label>
+                    <label for="defaultMode">Default Tab</label>
                     <select id="defaultMode">
                         <option value="voice">Voice</option>
                         <option value="chat">Chat</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="widgetColor">Widget Color:</label>
-                    <input type="color" id="widgetColor" value="#347D9B">
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="updateWidget()">Apply</button>
+                <button class="btn btn-test" onclick="testVoiceWebhook()">Test Voice Webhook</button>
+                <button class="btn btn-test" onclick="testChatWebhook()">Test Chat Webhook</button>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="card">
+            <h2>Status</h2>
+            <p class="desc">Configuration status at a glance.</p>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">Webhook</div>
+                    <div class="status-value" id="webhookStatus">—</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Project ID</div>
+                    <div class="status-value" id="projectStatus">—</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Mode</div>
+                    <div class="status-value" id="modeStatus">—</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Ready</div>
+                    <div class="status-value" id="readyStatus">—</div>
                 </div>
             </div>
-            
-            <button class="update-btn" onclick="updateWidget()">Update Widget</button>
-            <button class="test-btn" onclick="testVoiceWebhook()">Test Voice</button>
-            <button class="test-btn" onclick="testChatWebhook()">Test Chat</button>
+            <div id="testResults"></div>
         </div>
 
-        <div class="status-panel">
-            <h2>Status Check</h2>
-            <div class="status-item">
-                <span>Webhook URL:</span>
-                <span class="status-value" id="webhookStatus">Not Set</span>
-            </div>
-            <div class="status-item">
-                <span>Project ID:</span>
-                <span class="status-value" id="projectStatus">Not Set</span>
-            </div>
-            <div class="status-item">
-                <span>Widget Mode:</span>
-                <span class="status-value" id="modeStatus">Dual</span>
-            </div>
-            <div class="status-item">
-                <span>Ready for Production:</span>
-                <span class="status-value" id="readyStatus">No</span>
-            </div>
-        </div>
+        <!-- Request Format Reference -->
+        <div class="card">
+            <h2>Webhook Request Format</h2>
+            <p class="desc">This is the data the widget sends to your Make.com webhook for each action.</p>
 
-        <div class="config-panel">
-            <h2>New Request Format</h2>
-            <p>The widget now sends this simplified format to your webhook:</p>
-            
-            <div class="example-config">
-<strong>Voice Request:</strong>
-{
+            <div class="request-grid">
+                <div class="request-block">
+                    <h4>Voice Call Request</h4>
+                    <pre class="code-block">{
   "project_id": "ZWQ4VZV",
   "mode": "voice",
   "dynamic_variables": {
-    "company_name": "Your Company"
+    "company_name": "Acme Corp"
   }
-}
-
-<strong>Chat Request:</strong>
-{
-  "project_id": "ZWQ4VZV", 
+}</pre>
+                </div>
+                <div class="request-block">
+                    <h4>Chat Message Request</h4>
+                    <pre class="code-block">{
+  "project_id": "ZWQ4VZV",
   "mode": "chat",
-  "dynamic_variables": {
-    "company_name": "Your Company"
-  }
-}
-            </div>
-
-            <h3>HTML Configuration:</h3>
-            <div class="example-config">
-&lt;script src="fluvio-universal-widget.js" 
-        data-webhook="https://hook.us2.make.com/your-webhook"
-        data-project-id="ZWQ4VZV"
-        data-mode="dual"
-        data-default-mode="voice"&gt;&lt;/script&gt;
+  "action": "send_message",
+  "chat_id": "chat_abc123",
+  "message": "Hello!"
+}</pre>
+                </div>
             </div>
         </div>
 
-        <div id="testResults"></div>
+        <!-- Embed Code -->
+        <div class="card">
+            <h2>Embed Code</h2>
+            <p class="desc">Paste this into your website HTML just before the closing <code>&lt;/body&gt;</code> tag.</p>
+            <pre class="code-block">&lt;script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+        data-webhook="https://hook.us2.make.com/your-webhook-url"
+        data-project-id="YOUR-PROJECT-ID"
+        data-mode="dual"
+        data-default-mode="voice"&gt;&lt;/script&gt;</pre>
+        </div>
+
     </div>
 
     <script>
         function updateStatus() {
-            const webhook = document.getElementById('webhookUrl').value;
-            const projectId = document.getElementById('projectId').value;
+            const webhook = document.getElementById('webhookUrl').value.trim();
+            const projectId = document.getElementById('projectId').value.trim();
             const mode = document.getElementById('widgetMode').value;
 
-            // Update webhook status
-            const webhookStatus = document.getElementById('webhookStatus');
-            if (!webhook || webhook.includes('your-webhook')) {
-                webhookStatus.textContent = 'Demo/Placeholder';
-                webhookStatus.className = 'status-value warning';
-            } else {
-                webhookStatus.textContent = 'Configured';
-                webhookStatus.className = 'status-value good';
-            }
+            const isPlaceholderWebhook = !webhook || webhook.includes('your-webhook');
+            const webhookEl = document.getElementById('webhookStatus');
+            webhookEl.textContent = isPlaceholderWebhook ? 'Not set' : 'Configured';
+            webhookEl.className = 'status-value ' + (isPlaceholderWebhook ? 'warn' : 'ok');
 
-            // Update project ID status
-            const projectStatus = document.getElementById('projectStatus');
-            if (!projectId || projectId.includes('demo')) {
-                projectStatus.textContent = 'Demo Mode';
-                projectStatus.className = 'status-value warning';
-            } else {
-                projectStatus.textContent = 'Configured';
-                projectStatus.className = 'status-value good';
-            }
+            const projectEl = document.getElementById('projectStatus');
+            projectEl.textContent = projectId || 'Not set';
+            projectEl.className = 'status-value ' + (projectId ? 'ok' : 'warn');
 
-            // Update mode status
-            document.getElementById('modeStatus').textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+            const modeLabels = { dual: 'Voice + Chat', voice: 'Voice only', chat: 'Chat only' };
+            document.getElementById('modeStatus').textContent = modeLabels[mode] || mode;
+            document.getElementById('modeStatus').className = 'status-value ok';
 
-            // Update ready status
-            const readyStatus = document.getElementById('readyStatus');
-            const isReady = !webhook.includes('your-webhook') && projectId && !projectId.includes('demo');
-            
-            if (isReady) {
-                readyStatus.textContent = 'Yes';
-                readyStatus.className = 'status-value good';
-            } else {
-                readyStatus.textContent = 'Demo Mode';
-                readyStatus.className = 'status-value warning';
-            }
+            const isReady = !isPlaceholderWebhook && !!projectId;
+            const readyEl = document.getElementById('readyStatus');
+            readyEl.textContent = isReady ? 'Yes' : 'No';
+            readyEl.className = 'status-value ' + (isReady ? 'ok' : 'warn');
         }
 
         function updateWidget() {
-            // Remove existing widget
-            const existingWidget = document.querySelector('script[src*="fluvio-universal-widget"]');
-            if (existingWidget) {
-                existingWidget.remove();
-            }
+            const existingScript = document.querySelector('script[src*="fluvio-universal-widget"]');
+            if (existingScript) existingScript.remove();
 
-            // Remove existing widget elements
-            const existingFab = document.getElementById('fluvio-fab');
-            const existingPanel = document.getElementById('fluvio-panel');
-            if (existingFab) existingFab.remove();
-            if (existingPanel) existingPanel.remove();
+            ['fluvio-fab', 'fluvio-panel'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.remove();
+            });
 
-            // Reset the loaded flag
             window.FluvioWidgetLoaded = false;
 
-            // Get form values
-            const webhook = document.getElementById('webhookUrl').value;
-            const projectId = document.getElementById('projectId').value;
-            const mode = document.getElementById('widgetMode').value;
-            const defaultMode = document.getElementById('defaultMode').value;
-            const color = document.getElementById('widgetColor').value;
-
-            // Create new script element
             const script = document.createElement('script');
             script.src = 'fluvio-universal-widget.js';
-            script.setAttribute('data-webhook', webhook);
-            script.setAttribute('data-project-id', projectId);
-            script.setAttribute('data-mode', mode);
-            script.setAttribute('data-default-mode', defaultMode);
-            script.setAttribute('data-color', color);
+            script.setAttribute('data-webhook', document.getElementById('webhookUrl').value.trim());
+            script.setAttribute('data-project-id', document.getElementById('projectId').value.trim());
+            script.setAttribute('data-mode', document.getElementById('widgetMode').value);
+            script.setAttribute('data-default-mode', document.getElementById('defaultMode').value);
+            script.setAttribute('data-color', document.getElementById('widgetColor').value);
             script.setAttribute('data-title', 'AI Assistant');
             script.setAttribute('data-subtitle', 'Voice & Chat Support');
             script.setAttribute('data-company-name', 'FluvioAI');
 
-            // Add to page
-            document.head.appendChild(script);
-
-            // Update status
+            document.body.appendChild(script);
             updateStatus();
-
-            alert('Widget updated with project ID configuration!');
         }
 
         async function testWebhook(mode) {
-            const webhook = document.getElementById('webhookUrl').value;
-            const projectId = document.getElementById('projectId').value;
-            
+            const webhook = document.getElementById('webhookUrl').value.trim();
+            const projectId = document.getElementById('projectId').value.trim();
+
             const payload = {
                 project_id: projectId,
-                mode: mode,
-                dynamic_variables: {
-                    company_name: "Test Company",
-                    test_mode: true
-                }
+                mode,
+                dynamic_variables: { company_name: 'Test Company', test_mode: true }
             };
 
             try {
@@ -348,51 +380,29 @@
                     body: JSON.stringify(payload)
                 });
 
-                const responseText = await response.text();
-                let responseData;
-                
-                try {
-                    responseData = JSON.parse(responseText);
-                } catch (e) {
-                    responseData = { raw_response: responseText };
-                }
+                const text = await response.text();
+                let data;
+                try { data = JSON.parse(text); } catch { data = { raw: text }; }
 
-                // Display result
-                const resultsDiv = document.getElementById('testResults');
-                const resultDiv = document.createElement('div');
-                resultDiv.className = `response-box ${response.ok ? 'success' : 'error'}`;
-                
-                const statusText = response.ok ? 'SUCCESS' : 'ERROR';
-                const details = response.ok ? 
-                    JSON.stringify(responseData, null, 2) : 
-                    `Status: ${response.status} ${response.statusText}\nResponse: ${responseText}`;
-                
-                resultDiv.innerHTML = `<h4>${statusText} - ${mode.toUpperCase()} Test</h4><pre>${details}</pre>`;
-                resultsDiv.appendChild(resultDiv);
+                const box = document.createElement('div');
+                box.className = 'result-box ' + (response.ok ? 'success' : 'error');
+                box.textContent = (response.ok ? 'SUCCESS' : 'ERROR') + ' — ' + mode.toUpperCase() + '\n\n' + JSON.stringify(data, null, 2);
+                document.getElementById('testResults').appendChild(box);
 
-            } catch (error) {
-                const resultsDiv = document.getElementById('testResults');
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'response-box error';
-                errorDiv.innerHTML = `<h4>NETWORK ERROR - ${mode.toUpperCase()} Test</h4><pre>${error.message}</pre>`;
-                resultsDiv.appendChild(errorDiv);
+            } catch (err) {
+                const box = document.createElement('div');
+                box.className = 'result-box error';
+                box.textContent = 'NETWORK ERROR — ' + mode.toUpperCase() + '\n\n' + err.message;
+                document.getElementById('testResults').appendChild(box);
             }
         }
 
-        function testVoiceWebhook() {
-            testWebhook('voice');
-        }
+        function testVoiceWebhook() { testWebhook('voice'); }
+        function testChatWebhook() { testWebhook('chat'); }
 
-        function testChatWebhook() {
-            testWebhook('chat');
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             updateStatus();
             updateWidget();
-
-            // Update status when form values change
             document.getElementById('webhookUrl').addEventListener('input', updateStatus);
             document.getElementById('projectId').addEventListener('input', updateStatus);
             document.getElementById('widgetMode').addEventListener('change', updateStatus);
