@@ -1081,12 +1081,6 @@
 
       // Check if chat container is visible
       const chatContainer = elements.chatContainer;
-      const computedStyle = window.getComputedStyle(chatContainer);
-        display: computedStyle.display,
-        visibility: computedStyle.visibility,
-        opacity: computedStyle.opacity,
-        className: chatContainer.className
-      });
 
       const messageDiv = document.createElement('div');
       messageDiv.className = `fluvio-message ${role}`;
@@ -1354,13 +1348,6 @@
         ensureChatGreeting();
       }, 500);
     }
-
-      currentMode,
-      hasVoiceContainer: !!elements.voiceContainer,
-      hasChatContainer: !!elements.chatContainer,
-      hasChatSend: !!elements.chatSend,
-      hasChatInput: !!elements.chatInput
-    });
 
     // Transcript toggle functionality
     const transcriptToggle = document.getElementById('fluvio-transcript-toggle');
@@ -1657,10 +1644,6 @@
       // Initialize widget
       initializeWidget(elements);
 
-        mode: config.mode,
-        projectId: config.projectId,
-        defaultMode: config.defaultMode
-      });
     } catch (error) {
       console.error('Widget initialization failed:', error);
     }
