@@ -300,6 +300,7 @@
         height: 180px;
         max-height: calc(30vh - 60px);
         overflow-y: auto;
+        overflow-x: hidden;
         border: 1px solid #E5E7EB;
         border-radius: 8px;
         padding: 16px;
@@ -354,6 +355,9 @@
         line-height: 1.4;
         border: 1px solid #E5E7EB;
         color: #374151;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        min-width: 0;
       }
 
       .fluvio-message.user .fluvio-message-content {
