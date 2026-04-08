@@ -384,7 +384,7 @@
         max-height: 120px;
         font-family: inherit;
         box-sizing: border-box;
-        overflow-y: auto;
+        overflow-y: hidden;
       }
 
       #fluvio-chat-input:focus {
@@ -1329,8 +1329,10 @@
       // Auto-resize textarea
       elements.chatInput.addEventListener('input', (e) => {
         e.target.style.height = 'auto';
-        const newHeight = Math.min(e.target.scrollHeight, 120);
+        const maxHeight = window.innerWidth <= 768 ? 96 : 120;
+        const newHeight = Math.min(e.target.scrollHeight, maxHeight);
         e.target.style.height = newHeight + 'px';
+        e.target.style.overflowY = newHeight >= maxHeight ? 'auto' : 'hidden';
         
         // Reposition panel if it's visible and might overflow
         if (elements.panel.style.display === 'block' && elements.panel.adjustPosition) {
