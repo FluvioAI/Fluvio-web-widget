@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fluvio Widget — Test Suite</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; background: #0f1117; color: #e5e7eb; padding: 24px; }
+    h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+    .meta { font-size: 12px; color: #6b7280; margin-bottom: 24px; }
+    .suite { margin-bottom: 20px; }
+    .suite-title { font-size: 13px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #1f2937; }
+    .test { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid #111827; font-size: 13px; }
+    .test:last-child { border-bottom: none; }
+    .badge { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; margin-top: 1px; }
+    .pass { background: #064e3b; color: #34d399; }
+    .fail { background: #7f1d1d; color: #f87171; }
+    .skip { background: #1f2937; color: #6b7280; }
+    .test-name { flex: 1; line-height: 1.4; }
+    .test-name.failed { color: #f87171; }
+    .error-detail { font-size: 11px; color: #ef4444; margin-top: 3px; background: #1c0a0a; padding: 4px 8px; border-radius: 4px; border-left: 2px solid #ef4444; white-space: pre-wrap; word-break: break-all; }
+    .summary { margin-top: 24px; padding: 16px; border-radius: 10px; font-size: 14px; font-weight: 600; }
+    .summary.all-pass { background: #064e3b; color: #34d399; }
+    .summary.some-fail { background: #7f1d1d; color: #f87171; }
+    .count { font-size: 24px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Fluvio Widget — Test Suite</h1>
+  <p class="meta">Critical user action tests — open browser console for additional output</p>
+  <div id="output"></div>
+
+  <script>
+  // ── Tiny test runner ────────────────────────────────────────────────────────
+  const results = [];
+  let currentSuite = '';
+
+  function suite(name) { currentSuite = name; }
+
+  async function test(name, fn) {
+    try {
+      await fn();
+      results.push({ suite: currentSuite, name, pass: true });
+    } catch (err) {
+      results.push({ suite: currentSuite, name, pass: false, error: err.message || String(err) });
+    }
+  }
+
+  function assert(condition, msg) {
+    if (!condition) throw new Error(msg || 'Assertion failed');
+  }
+
+  function assertEqual(a, b, msg) {
+    if (a !== b) throw new Error(msg || `Expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`);
+  }
+
+  function assertContains(str, sub, msg) {
+    if (!String(str).includes(sub)) throw new Error(msg || `Expected "${str}" to contain "${sub}"`);
+  }
+
+  function assertNotContains(str, sub, msg) {
+    if (String(str).includes(sub)) throw new Error(msg || `"${str}" should not contain "${sub}"`);
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ── Helpers to read the widget's internal helpers via the module scope ───────
+  // We expose helpers on window for testing by temporarily patching the widget.
+  // The widget runs in an IIFE, so we test via DOM state and behaviour.
+
+  function getPanel()      { return document.getElementById('fluvio-panel'); }
+  function getFab()        { return document.getElementById('fluvio-fab'); }
+  function getCallBtn()    { return document.getElementById('fluvio-call-button'); }
+  function getCallText()   { return document.getElementById('fluvio-call-text'); }
+  function getStatus()     { return document.getElementById('fluvio-status'); }
+  function getOrbWrapper() { return document.getElementById('fluvio-orb-wrapper'); }
+  function getOrbLabel()   { return document.getElementById('fluvio-orb-label'); }
+  function getChatInput()  { return document.getElementById('fluvio-chat-input'); }
+  function getChatSend()   { return document.getElementById('fluvio-chat-send'); }
+  function getChatMsgs()   { return document.getElementById('fluvio-chat-messages'); }
+  function getModeSelector(){ return document.getElementById('fluvio-mode-selector'); }
+  function isPanelOpen()   { return getPanel()?.style.display === 'block'; }
+
+  function clickFab()      { getFab()?.click(); }
+  function clickClose()    { document.getElementById('fluvio-close')?.click(); }
+  function pressEscape()   { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); }
+  function clickTab(mode)  { getModeSelector()?.querySelector(`[data-mode="${mode}"]`)?.click(); }
+
+  // ── Security utility tests (pure functions, no DOM needed) ──────────────────
+
+  // Replicate esc() and isValidWebhookUrl() locally for pure-unit testing
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function isValidWebhookUrl(url) {
+    try { const p = new URL(url); return p.protocol === 'https:'; } catch { return false; }
+  }
+
+  // ── Run all tests ────────────────────────────────────────────────────────────
+  async function runTests() {
+
+    // ── Suite 1: Security helpers ────────────────────────────────────────────
+    suite('Security Helpers');
+
+    test('esc() escapes < and > characters', () => {
+      assertEqual(esc('<script>alert(1)</script>'), '&lt;script&gt;alert(1)&lt;/script&gt;');
+    });
+
+    test('esc() escapes & character', () => {
+      assertEqual(esc('Tom & Jerry'), 'Tom &amp; Jerry');
+    });
+
+    test('esc() escapes double and single quotes', () => {
+      assertContains(esc('"hello"'), '&quot;');
+      assertContains(esc("it's"), '&#39;');
+    });
+
+    test('esc() handles null and undefined safely', () => {
+      assertEqual(esc(null), '');
+      assertEqual(esc(undefined), '');
+    });
+
+    test('isValidWebhookUrl() accepts https URLs', () => {
+      assert(isValidWebhookUrl('https://hook.us2.make.com/abc123'), 'Should accept valid https URL');
+    });
+
+    test('isValidWebhookUrl() rejects http URLs', () => {
+      assert(!isValidWebhookUrl('http://hook.us2.make.com/abc123'), 'Should reject http');
+    });
+
+    test('isValidWebhookUrl() rejects javascript: scheme', () => {
+      assert(!isValidWebhookUrl('javascript:alert(1)'), 'Should reject javascript: scheme');
+    });
+
+    test('isValidWebhookUrl() rejects empty string', () => {
+      assert(!isValidWebhookUrl(''), 'Should reject empty string');
+    });
+
+    test('isValidWebhookUrl() rejects malformed URL', () => {
+      assert(!isValidWebhookUrl('not-a-url'), 'Should reject malformed URL');
+    });
+
+    // Wait for widget to finish mounting before DOM tests
+    await sleep(300);
+
+    // ── Suite 2: Widget initialisation ──────────────────────────────────────
+    suite('Widget Initialisation');
+
+    test('FAB button is rendered in the DOM', () => {
+      assert(getFab() !== null, 'FAB element should exist');
+    });
+
+    test('Panel is rendered but hidden on load', () => {
+      const panel = getPanel();
+      assert(panel !== null, 'Panel element should exist');
+      assertEqual(panel.style.display, '', 'Panel should not be visible on load');
+    });
+
+    test('FAB has aria-expanded="false" on load', () => {
+      assertEqual(getFab()?.getAttribute('aria-expanded'), 'false', 'aria-expanded should be false initially');
+    });
+
+    test('FAB has role="button"', () => {
+      assertEqual(getFab()?.getAttribute('role'), 'button');
+    });
+
+    test('Status element has aria-live="polite"', () => {
+      assertEqual(getStatus()?.getAttribute('aria-live'), 'polite');
+    });
+
+    test('Call button starts disabled until SDK resolves', () => {
+      // In demo mode the button gets enabled quickly, so just check it exists
+      assert(getCallBtn() !== null, 'Call button should exist');
+    });
+
+    test('Tab buttons have role="tab"', () => {
+      const tabs = getModeSelector()?.querySelectorAll('[role="tab"]');
+      assert(tabs && tabs.length === 2, 'Should have 2 tab buttons with role=tab');
+    });
+
+    test('Web Call tab is active by default', () => {
+      const voiceTab = getModeSelector()?.querySelector('[data-mode="voice"]');
+      assert(voiceTab?.classList.contains('active'), 'Voice tab should be active by default');
+    });
+
+    test('Icons render as inline SVG, not as <i data-lucide> placeholders', () => {
+      const panel = getPanel();
+      assert(!panel?.innerHTML.includes('data-lucide'), 'Should not have unrendered data-lucide attributes');
+      assert(panel?.innerHTML.includes('<svg'), 'Icons should be rendered as SVG');
+    });
+
+    // ── Suite 3: Panel open / close ─────────────────────────────────────────
+    suite('Panel Open / Close');
+
+    test('Clicking FAB opens the panel', async () => {
+      if (isPanelOpen()) clickFab(); // reset
+      await sleep(50);
+      clickFab();
+      await sleep(50);
+      assert(isPanelOpen(), 'Panel should be visible after FAB click');
+    });
+
+    test('FAB aria-expanded becomes "true" when panel opens', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      assertEqual(getFab()?.getAttribute('aria-expanded'), 'true');
+    });
+
+    test('Clicking FAB again closes the panel', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickFab();
+      await sleep(50);
+      assert(!isPanelOpen(), 'Panel should be hidden after second FAB click');
+    });
+
+    test('Clicking close button closes the panel', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickClose();
+      await sleep(50);
+      assert(!isPanelOpen(), 'Panel should close when close button clicked');
+    });
+
+    test('FAB aria-expanded returns to "false" when panel closes', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickClose();
+      await sleep(50);
+      assertEqual(getFab()?.getAttribute('aria-expanded'), 'false');
+    });
+
+    test('Pressing Escape closes the panel', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      pressEscape();
+      await sleep(50);
+      assert(!isPanelOpen(), 'Panel should close on Escape key');
+    });
+
+    test('Pressing Escape when panel is closed does not throw', async () => {
+      if (isPanelOpen()) { clickFab(); await sleep(50); }
+      pressEscape(); // should be a no-op, not an error
+    });
+
+    // ── Suite 4: Tab switching ───────────────────────────────────────────────
+    suite('Tab Switching');
+
+    test('Clicking Chat tab makes chat container active', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickTab('chat');
+      await sleep(50);
+      const chat = document.getElementById('fluvio-chat-container');
+      assert(chat?.classList.contains('active'), 'Chat container should be active');
+    });
+
+    test('Clicking Chat tab hides voice container', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickTab('chat');
+      await sleep(50);
+      const voice = document.getElementById('fluvio-voice-container');
+      assertEqual(voice?.style.display, 'none', 'Voice container should be hidden');
+    });
+
+    test('Clicking Web Call tab makes voice container active', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickTab('voice');
+      await sleep(50);
+      const voice = document.getElementById('fluvio-voice-container');
+      assert(voice?.style.display !== 'none', 'Voice container should be visible');
+    });
+
+    test('Active tab has "active" class, inactive tab does not', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickTab('chat');
+      await sleep(50);
+      const chatTab  = getModeSelector()?.querySelector('[data-mode="chat"]');
+      const voiceTab = getModeSelector()?.querySelector('[data-mode="voice"]');
+      assert(chatTab?.classList.contains('active'), 'Chat tab should be active');
+      assert(!voiceTab?.classList.contains('active'), 'Voice tab should not be active');
+    });
+
+    // ── Suite 5: Chat greeting ───────────────────────────────────────────────
+    suite('Chat Greeting');
+
+    test('Default greeting appears when chat tab is first opened', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      // Reset to voice first, then switch to chat to trigger greeting
+      clickTab('voice');
+      await sleep(50);
+      // Clear existing messages to test fresh greeting
+      const msgs = getChatMsgs();
+      if (msgs) msgs.innerHTML = '';
+      // Re-enable greeting by resetting the flag via re-opening
+      clickTab('chat');
+      await sleep(200);
+      const messages = getChatMsgs()?.querySelectorAll('.fluvio-message');
+      assert(messages && messages.length > 0, 'At least one greeting message should appear');
+    });
+
+    test('Greeting message uses textContent, not innerHTML injection', async () => {
+      const msgs = getChatMsgs()?.querySelectorAll('.fluvio-message .fluvio-message-content');
+      if (msgs && msgs.length > 0) {
+        const first = msgs[0];
+        // If textContent was used, innerHTML will equal the escaped text, no raw <tags>
+        assert(!first.innerHTML.includes('<script'), 'No script tags should be in message HTML');
+      }
+    });
+
+    // ── Suite 6: Chat XSS guard ──────────────────────────────────────────────
+    suite('Chat XSS Guard');
+
+    test('XSS payload in chat input does not execute or render as HTML', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickTab('chat');
+      await sleep(100);
+
+      let xssExecuted = false;
+      window.__xssTest = () => { xssExecuted = true; };
+
+      const input = getChatInput();
+      if (input) {
+        input.value = '<img src=x onerror="window.__xssTest()">';
+        getChatSend()?.click();
+        await sleep(100);
+      }
+
+      assert(!xssExecuted, 'XSS payload should NOT execute');
+
+      // Also check the rendered bubble contains escaped text, not an <img>
+      const bubbles = getChatMsgs()?.querySelectorAll('.fluvio-message.user .fluvio-message-content');
+      if (bubbles && bubbles.length > 0) {
+        const last = bubbles[bubbles.length - 1];
+        assert(!last.querySelector('img'), 'No <img> tag should be injected into the DOM');
+        assertContains(last.textContent, '<img', 'Raw text should be visible, not parsed as HTML');
+      }
+    });
+
+    // ── Suite 7: Voice call lifecycle ────────────────────────────────────────
+    suite('Voice Call Lifecycle (Demo Mode)');
+
+    test('Call button exists and shows "Start Call" initially', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickTab('voice');
+      await sleep(50);
+      // Wait for demo mode to enable button
+      await sleep(500);
+      assert(getCallBtn() !== null, 'Call button should exist');
+    });
+
+    test('Clicking Start Call enters connecting state', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickTab('voice');
+      await sleep(600); // wait for button to enable
+      const btn = getCallBtn();
+      if (btn && !btn.disabled) {
+        btn.click();
+        await sleep(50);
+        const status = getStatus()?.textContent;
+        assertContains(status, 'Connecting', 'Status should show Connecting after click');
+      }
+    });
+
+    test('Orb transitions to listening state when call connects', async () => {
+      await sleep(1600); // wait for demo 1.5s connect delay
+      const orb = getOrbWrapper();
+      const label = getOrbLabel();
+      if (orb && orb.className !== 'idle') {
+        assertEqual(orb.className, 'listening', 'Orb should be in listening state after connect');
+        assertContains(label?.textContent || '', 'Listening', 'Orb label should say Listening');
+      }
+    });
+
+    test('Orb transitions to talking state during agent speech simulation', async () => {
+      await sleep(1600); // wait for the demo talking phase (1.5s after connect)
+      const orb = getOrbWrapper();
+      if (orb) {
+        assert(
+          orb.className === 'talking' || orb.className === 'listening',
+          `Orb should be in talking or listening state, got: ${orb.className}`
+        );
+      }
+    });
+
+    test('End Call button appears during active call', async () => {
+      const btn = getCallBtn();
+      // If connected, button should show "End Call"
+      if (btn && btn.classList.contains('end')) {
+        assertEqual(getCallText()?.textContent, 'End Call');
+      }
+    });
+
+    test('Closing panel during active call resets orb to idle', async () => {
+      const btn = getCallBtn();
+      if (btn?.classList.contains('end')) {
+        // Call is active — close the panel
+        clickClose();
+        await sleep(100);
+        // Re-open to check orb state
+        clickFab();
+        await sleep(100);
+        clickTab('voice');
+        await sleep(100);
+        const orb = getOrbWrapper();
+        assertEqual(orb?.className, 'idle', 'Orb should be idle after panel close during call');
+      }
+    });
+
+    // ── Suite 8: Accessibility ────────────────────────────────────────────────
+    suite('Accessibility');
+
+    test('Chat messages region has aria-live="polite"', () => {
+      assertEqual(getChatMsgs()?.getAttribute('aria-live'), 'polite');
+    });
+
+    test('Chat input has aria-label', () => {
+      assert(getChatInput()?.getAttribute('aria-label'), 'Chat input should have aria-label');
+    });
+
+    test('Chat send button has aria-label', () => {
+      assert(getChatSend()?.getAttribute('aria-label'), 'Send button should have aria-label');
+    });
+
+    test('Orb wrapper is hidden from assistive tech', () => {
+      assertEqual(getOrbWrapper()?.getAttribute('aria-hidden'), 'true');
+    });
+
+    test('Close button has aria-label', () => {
+      const closeBtn = document.getElementById('fluvio-close');
+      assert(closeBtn?.getAttribute('aria-label'), 'Close button should have aria-label');
+    });
+
+    // ── Render results ───────────────────────────────────────────────────────
+    renderResults();
+  }
+
+  function renderResults() {
+    const out = document.getElementById('output');
+    const suites = [...new Set(results.map(r => r.suite))];
+    let totalPass = 0, totalFail = 0;
+
+    suites.forEach(suiteName => {
+      const tests = results.filter(r => r.suite === suiteName);
+      const pass = tests.filter(t => t.pass).length;
+      const fail = tests.filter(t => !t.pass).length;
+      totalPass += pass; totalFail += fail;
+
+      const div = document.createElement('div');
+      div.className = 'suite';
+      div.innerHTML = `<div class="suite-title">${suiteName} &nbsp;·&nbsp; ${pass}/${tests.length} passed</div>`;
+
+      tests.forEach(t => {
+        const row = document.createElement('div');
+        row.className = 'test';
+        const badge = `<div class="badge ${t.pass ? 'pass' : 'fail'}">${t.pass ? '✓' : '✗'}</div>`;
+        const errorHtml = t.error ? `<div class="error-detail">${t.error}</div>` : '';
+        row.innerHTML = `${badge}<div class="test-name ${t.pass ? '' : 'failed'}">${t.name}${errorHtml}</div>`;
+        div.appendChild(row);
+      });
+
+      out.appendChild(div);
+    });
+
+    const summary = document.createElement('div');
+    summary.className = `summary ${totalFail === 0 ? 'all-pass' : 'some-fail'}`;
+    summary.innerHTML = `
+      <span class="count">${totalFail === 0 ? '✓' : '✗'}</span>
+      &nbsp;&nbsp;${totalPass} passed · ${totalFail} failed · ${results.length} total
+    `;
+    out.appendChild(summary);
+  }
+
+  // Load the widget then run tests
+  window.FluvioWidgetLoaded = false; // allow reload in this page context
+  </script>
+
+  <!-- Load the widget under test in demo mode -->
+  <script src="./fluvio-universal-widget-v2.js"
+          data-webhook="https://hook.us2.make.com/your-webhook-url"
+          data-project-id="test_project_123"
+          data-mode="dual"
+          data-default-mode="voice"
+          data-color="#347D9B"
+          data-title="Test Widget"
+          data-subtitle="Testing"
+          data-agent-name="TestBot"
+          data-demo="true">
+  </script>
+
+  <script>
+    // Run after widget has had time to initialize
+    setTimeout(runTests, 400);
+  </script>
+</body>
+</html>

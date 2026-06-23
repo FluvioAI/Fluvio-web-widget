@@ -72,55 +72,24 @@
   }
 
 
-  // ── H1/H3: Load Lucide Icons with timeout and pinned version ───────────────
-  function loadLucideIcons() {
-    if (window.lucide) return Promise.resolve();
+  // Inline SVGs — eliminates the Lucide CDN dependency entirely.
+  // Icons used: Phone, PhoneOff, MessageCircle, X, Bot, User, Send
+  const ICONS = {
+    Phone: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+    PhoneOff: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.62 3h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 10.91"/><line x1="2" y1="2" x2="22" y2="22"/></svg>',
+    MessageCircle: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    X: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    Bot: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="10" x="3" y="11" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>',
+    User: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    Send: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  };
 
-    const loader = new Promise((resolve) => {
-      const script = document.createElement('script');
-      // Pinned major version — update intentionally, not silently via @latest
-      script.src = 'https://unpkg.com/lucide@0.263.1/dist/umd/lucide.js';
-      script.onload = resolve;
-      script.onerror = () => {
-        // Fallback CDN
-        const s2 = document.createElement('script');
-        s2.src = 'https://cdn.jsdelivr.net/npm/lucide@0.263.1/dist/umd/lucide.js';
-        s2.onload = resolve;
-        s2.onerror = resolve; // Continue without icons rather than blocking
-        document.head.appendChild(s2);
-      };
-      document.head.appendChild(script);
-    });
-
-    return withTimeout(loader, 8000, undefined);
+  function createIcon(name) {
+    return ICONS[name] || ICONS.MessageCircle;
   }
 
-  // Create Lucide icon element
-  function createIcon(iconName, className = '') {
-    if (window.lucide && window.lucide.createElement) {
-      try {
-        const iconElement = window.lucide.createElement(window.lucide[iconName] || window.lucide.MessageCircle);
-        if (className) {
-          iconElement.className = className;
-        }
-        return iconElement.outerHTML;
-      } catch (e) {
-      }
-    }
-    
-    // Fallback to data attributes for Lucide
-    return `<i data-lucide="${iconName}" class="${className}"></i>`;
-  }
-
-  // Initialize Lucide icons in DOM
-  function initializeLucideIcons() {
-    if (window.lucide && window.lucide.createIcons) {
-      try {
-        window.lucide.createIcons();
-      } catch (e) {
-      }
-    }
-  }
+  // No-op retained so any remaining call sites don't throw
+  function initializeLucideIcons() {}
 
   // Inject CSS styles
   function injectStyles() {
@@ -1192,12 +1161,6 @@
 
       elements.chatMessages.appendChild(messageDiv);
       elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-
-      // Scope icon init to the new avatar node only
-      if (window.lucide && window.lucide.createIcons) {
-        try { window.lucide.createIcons({ el: avatar }); } catch {}
-      }
-
       chatHistory.push({ role, content, timestamp: Date.now() });
     }
 
@@ -1689,9 +1652,6 @@
     }
 
     try {
-      // H1: Lucide load is time-bounded — widget renders even if icons fail
-      await loadLucideIcons();
-
       injectStyles();
       const elements = createWidget();
 
