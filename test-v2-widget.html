@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fluvio Widget v2 — Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f1117 0%, #1a2332 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 24px;
+      color: white;
+    }
+    h1 { font-size: 28px; font-weight: 700; opacity: 0.9; }
+    p  { font-size: 15px; opacity: 0.5; }
+    .badge {
+      background: rgba(52,125,155,0.2);
+      border: 1px solid rgba(52,125,155,0.4);
+      color: #5aafc7;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <span class="badge">Widget v2 Demo</span>
+  <h1>Fluvio AI Assistant</h1>
+  <p>Click the button in the bottom-right corner to open the widget.</p>
+
+  <script src="./fluvio-universal-widget-v2.js"
+          data-webhook="https://hook.us2.make.com/your-webhook-url"
+          data-project-id="demo_project_123"
+          data-mode="dual"
+          data-default-mode="voice"
+          data-color="#347D9B"
+          data-position="bottom-right"
+          data-title="AI Assistant"
+          data-subtitle="Voice &amp; Chat Support"
+          data-agent-name="Aria">
+  </script>
+</body>
+</html>
