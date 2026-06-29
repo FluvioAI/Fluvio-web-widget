@@ -80,7 +80,7 @@
   function getChatSend()   { return document.getElementById('fluvio-chat-send'); }
   function getChatMsgs()   { return document.getElementById('fluvio-chat-messages'); }
   function getModeSelector(){ return document.getElementById('fluvio-mode-selector'); }
-  function isPanelOpen()   { return getPanel()?.style.display === 'block'; }
+  function isPanelOpen()   { const d = getPanel()?.style.display; return d === 'flex' || d === 'block'; }
 
   function clickFab()      { getFab()?.click(); }
   function clickClose()    { document.getElementById('fluvio-close')?.click(); }
@@ -182,9 +182,20 @@
       assert(tabs && tabs.length === 2, 'Should have 2 tab buttons with role=tab');
     });
 
-    test('Web Call tab is active by default', () => {
-      const voiceTab = getModeSelector()?.querySelector('[data-mode="voice"]');
-      assert(voiceTab?.classList.contains('active'), 'Voice tab should be active by default');
+    test('Landing screen exists in DOM (dual mode)', () => {
+      const landing = document.getElementById('fluvio-mode-landing');
+      assert(landing !== null, 'Landing screen should exist in dual mode');
+    });
+
+    test('Landing screen is active on load (dual mode)', () => {
+      const landing = document.getElementById('fluvio-mode-landing');
+      assert(landing?.classList.contains('active'), 'Landing should be active initially');
+    });
+
+    test('FAB renders as pill with mini-orb and text', () => {
+      const fab = getFab();
+      assert(fab?.querySelector('.fluvio-fab-orb'), 'FAB should have mini orb');
+      assert(fab?.querySelector('.fluvio-fab-text'), 'FAB should have text span');
     });
 
     test('Icons render as inline SVG, not as <i data-lucide> placeholders', () => {
@@ -242,37 +253,88 @@
       pressEscape(); // should be a no-op, not an error
     });
 
+    // helper: open panel and navigate past landing to a specific mode
+    async function openToMode(mode) {
+      if (!isPanelOpen()) { clickFab(); await sleep(80); }
+      const card = document.querySelector(`.fluvio-mode-card[data-mode="${mode}"]`);
+      if (card) { card.click(); await sleep(80); }
+      else { clickTab(mode); await sleep(50); }
+    }
+
+    // ── Suite 3b: Landing screen ─────────────────────────────────────────────
+    suite('Landing Screen');
+
+    test('Opening panel in dual mode shows landing, hides both containers', async () => {
+      if (isPanelOpen()) { clickFab(); await sleep(50); }
+      clickFab();
+      await sleep(100);
+      const landing = document.getElementById('fluvio-mode-landing');
+      const voice   = document.getElementById('fluvio-voice-container');
+      const chat    = document.getElementById('fluvio-chat-container');
+      assert(landing?.classList.contains('active'), 'Landing should be active');
+      assert(!voice?.classList.contains('active'),  'Voice should be inactive');
+      assert(!chat?.classList.contains('active'),   'Chat should be inactive');
+    });
+
+    test('Clicking Voice card shows voice container, hides landing', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(80); }
+      const card = document.querySelector('.fluvio-mode-card[data-mode="voice"]');
+      if (card) { card.click(); await sleep(80); }
+      const landing = document.getElementById('fluvio-mode-landing');
+      const voice   = document.getElementById('fluvio-voice-container');
+      assert(!landing?.classList.contains('active'), 'Landing should be hidden');
+      assert(voice?.classList.contains('active'),    'Voice should be active');
+    });
+
+    test('Clicking Chat card shows chat container', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(80); }
+      const card = document.querySelector('.fluvio-mode-card[data-mode="chat"]');
+      if (card) { card.click(); await sleep(80); }
+      const chat = document.getElementById('fluvio-chat-container');
+      assert(chat?.classList.contains('active'), 'Chat should be active');
+    });
+
+    test('Back button in chat view returns to landing', async () => {
+      await openToMode('chat');
+      const back = document.getElementById('fluvio-back');
+      if (back) { back.click(); await sleep(80); }
+      const landing = document.getElementById('fluvio-mode-landing');
+      assert(landing?.classList.contains('active'), 'Landing should reappear after back');
+    });
+
+    test('Closing panel and reopening resets to landing', async () => {
+      await openToMode('voice');
+      clickClose();
+      await sleep(50);
+      clickFab();
+      await sleep(100);
+      const landing = document.getElementById('fluvio-mode-landing');
+      assert(landing?.classList.contains('active'), 'Landing should show on re-open');
+    });
+
     // ── Suite 4: Tab switching ───────────────────────────────────────────────
     suite('Tab Switching');
 
     test('Clicking Chat tab makes chat container active', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(50); }
-      clickTab('chat');
-      await sleep(50);
+      await openToMode('chat');
       const chat = document.getElementById('fluvio-chat-container');
       assert(chat?.classList.contains('active'), 'Chat container should be active');
     });
 
-    test('Clicking Chat tab hides voice container', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(50); }
-      clickTab('chat');
-      await sleep(50);
+    test('Clicking Chat tab deactivates voice container', async () => {
+      await openToMode('chat');
       const voice = document.getElementById('fluvio-voice-container');
-      assertEqual(voice?.style.display, 'none', 'Voice container should be hidden');
+      assert(!voice?.classList.contains('active'), 'Voice container should not be active');
     });
 
     test('Clicking Web Call tab makes voice container active', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(50); }
-      clickTab('voice');
-      await sleep(50);
+      await openToMode('voice');
       const voice = document.getElementById('fluvio-voice-container');
-      assert(voice?.style.display !== 'none', 'Voice container should be visible');
+      assert(voice?.classList.contains('active'), 'Voice container should be active');
     });
 
     test('Active tab has "active" class, inactive tab does not', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(50); }
-      clickTab('chat');
-      await sleep(50);
+      await openToMode('chat');
       const chatTab  = getModeSelector()?.querySelector('[data-mode="chat"]');
       const voiceTab = getModeSelector()?.querySelector('[data-mode="voice"]');
       assert(chatTab?.classList.contains('active'), 'Chat tab should be active');
@@ -283,15 +345,7 @@
     suite('Chat Greeting');
 
     test('Default greeting appears when chat tab is first opened', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(50); }
-      // Reset to voice first, then switch to chat to trigger greeting
-      clickTab('voice');
-      await sleep(50);
-      // Clear existing messages to test fresh greeting
-      const msgs = getChatMsgs();
-      if (msgs) msgs.innerHTML = '';
-      // Re-enable greeting by resetting the flag via re-opening
-      clickTab('chat');
+      await openToMode('chat');
       await sleep(200);
       const messages = getChatMsgs()?.querySelectorAll('.fluvio-message');
       assert(messages && messages.length > 0, 'At least one greeting message should appear');
@@ -310,9 +364,7 @@
     suite('Chat XSS Guard');
 
     test('XSS payload in chat input does not execute or render as HTML', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(50); }
-      clickTab('chat');
-      await sleep(100);
+      await openToMode('chat');
 
       let xssExecuted = false;
       window.__xssTest = () => { xssExecuted = true; };
@@ -338,19 +390,17 @@
     // ── Suite 7: Voice call lifecycle ────────────────────────────────────────
     suite('Voice Call Lifecycle (Demo Mode)');
 
-    test('Call button exists and shows "Start Call" initially', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(50); }
-      clickTab('voice');
-      await sleep(50);
-      // Wait for demo mode to enable button
+    test('Call button exists and shows "Start to call" initially', async () => {
+      await openToMode('voice');
       await sleep(500);
       assert(getCallBtn() !== null, 'Call button should exist');
+      const txt = document.getElementById('fluvio-call-text')?.textContent || '';
+      assert(txt.toLowerCase().includes('start'), 'Button should say start');
     });
 
     test('Clicking Start Call enters connecting state', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(50); }
-      clickTab('voice');
-      await sleep(600); // wait for button to enable
+      await openToMode('voice');
+      await sleep(500);
       const btn = getCallBtn();
       if (btn && !btn.disabled) {
         btn.click();
