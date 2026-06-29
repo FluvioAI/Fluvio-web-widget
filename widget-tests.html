@@ -107,7 +107,7 @@
     suite('Security Helpers');
 
     test('esc() escapes < and > characters', () => {
-      assertEqual(esc('<script>alert(1)</script>'), '&lt;script&gt;alert(1)&lt;/script&gt;');
+      assertEqual(esc('<script>alert(1)<\/script>'), '&lt;script&gt;alert(1)&lt;\/script&gt;');
     });
 
     test('esc() escapes & character', () => {
