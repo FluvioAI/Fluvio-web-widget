@@ -1283,7 +1283,7 @@
     }
 
     elements.fab.addEventListener('click', () => {
-      elements.panel.style.display !== 'none' ? closePanel() : openPanel();
+      elements.panel.style.display === 'flex' ? closePanel() : openPanel();
     });
 
     elements.fab.addEventListener('keydown', (e) => {
@@ -1292,7 +1292,7 @@
 
     // M5: Escape key closes panel
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && elements.panel.style.display !== 'none') closePanel();
+      if (e.key === 'Escape' && elements.panel.style.display === 'flex') closePanel();
     });
 
     // Landing card clicks
@@ -1311,7 +1311,7 @@
     // H5: Throttled resize/scroll with RAF
     let rafPending = false;
     function throttledAdjust() {
-      if (rafPending || elements.panel.style.display === 'none') return;
+      if (rafPending || elements.panel.style.display !== 'flex') return;
       rafPending = true;
       requestAnimationFrame(() => {
         if (elements.panel.adjustPosition) elements.panel.adjustPosition();
@@ -1359,7 +1359,7 @@
         e.target.style.height = newHeight + 'px';
         e.target.style.overflowY = newHeight >= maxHeight ? 'auto' : 'hidden';
         
-        if (elements.panel.style.display !== 'none' && elements.panel.adjustPosition) {
+        if (elements.panel.style.display === 'flex' && elements.panel.adjustPosition) {
           setTimeout(() => {
             elements.panel.adjustPosition();
           }, 10);

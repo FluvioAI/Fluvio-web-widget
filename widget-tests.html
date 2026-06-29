@@ -80,7 +80,7 @@
   function getChatSend()   { return document.getElementById('fluvio-chat-send'); }
   function getChatMsgs()   { return document.getElementById('fluvio-chat-messages'); }
   function getModeSelector(){ return document.getElementById('fluvio-mode-selector'); }
-  function isPanelOpen()   { const d = getPanel()?.style.display; return d === 'flex' || d === 'block'; }
+  function isPanelOpen()   { return getPanel()?.style.display === 'flex'; }
 
   function clickFab()      { getFab()?.click(); }
   function clickClose()    { document.getElementById('fluvio-close')?.click(); }
