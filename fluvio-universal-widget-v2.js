@@ -1020,19 +1020,19 @@
       timerEl:        document.getElementById('fluvio-timer'),
     };
   }
-  // ── H1/H3: Load Retell SDK with timeout and pinned version ─────────────────
+  // ── H1/H3: Load Retell SDK with timeout ─────────────────────────────────────
   // Dynamic import() fallbacks removed — they bypass CSP script-src directives.
   // Embedders must whitelist unpkg.com or jsdelivr.net in their CSP.
   function loadRetellSDK() {
+    const RETELL_SDK_URL = 'retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
     const loader = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      // Pinned version — update intentionally, not silently via @latest
-      script.src = 'https://unpkg.com/retell-client-js-sdk@3.0.14/dist/retell-client-js-sdk.min.js';
+      script.src = `https://unpkg.com/${RETELL_SDK_URL}`;
 
       script.onload = resolve;
       script.onerror = () => {
         const script2 = document.createElement('script');
-        script2.src = 'https://cdn.jsdelivr.net/npm/retell-client-js-sdk@3.0.14/dist/retell-client-js-sdk.min.js';
+        script2.src = `https://cdn.jsdelivr.net/npm/${RETELL_SDK_URL}`;
         script2.onload = resolve;
         script2.onerror = () => reject(new Error('Retell SDK failed to load from all CDNs'));
         document.head.appendChild(script2);
