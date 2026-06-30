@@ -109,29 +109,30 @@
       else h = ((r - g) / d + 4) / 6;
     }
     const hd = Math.round(h * 360);
-    // Vibrant lightness for blobs — boost dim brand colors so blobs glow
-    const vl = Math.max(52, Math.min(65, Math.round(l * 100) + 12));
-    const vs = Math.round(Math.min(1, (s || 0.7) * 1.1) * 100);
-    const h2 = (hd + 150) % 360;   // complementary-ish
-    const h3 = (hd + 240) % 360;   // triad
+    // mix-blend-mode:screen needs high lightness to glow on a dark base.
+    // Floor at 65%, cap at 75% — any lower and dark brand colors look black.
+    const vl = Math.max(65, Math.min(75, Math.round(l * 100) + 28));
+    const vs = Math.round(Math.min(1, (s || 0.7) * 1.5) * 100);
+    const h2 = (hd + 150) % 360;
+    const h3 = (hd + 240) % 360;
     const c = (h, sat, lit, alpha) => alpha != null
       ? `hsl(${h} ${sat}% ${lit}% / ${alpha})`
       : `hsl(${h} ${sat}% ${lit}%)`;
     return {
       b1:   c(hd, vs, vl),
-      b1b:  c(hd, vs, Math.max(38, vl - 16)),
-      b2:   c(h2, 72, 60),
-      b2b:  c(h2, 72, 44),
-      b3:   c(h3, 76, 56),
-      b3b:  c(h3, 76, 40),
-      b4:   c(hd, 55, 82),
-      b4b:  c(hd, 55, 72),
-      base: c(hd, 55, 9),
-      mid:  c(hd, 48, 5),
+      b1b:  c(hd, vs, Math.max(50, vl - 18)),
+      b2:   c(h2, 85, 68),
+      b2b:  c(h2, 85, 52),
+      b3:   c(h3, 88, 65),
+      b3b:  c(h3, 88, 50),
+      b4:   c(hd, 60, 85),
+      b4b:  c(hd, 60, 75),
+      base: c(hd, 60, 8),
+      mid:  c(hd, 50, 4),
       deep: c(hd, 40, 2),
-      glow: c(hd, 70, 45, 0.38),
-      glowListen: c(h3, 76, 56, 0.48),
-      glowTalk:   c(hd, 80, 55, 0.52),
+      glow: c(hd, 75, 50, 0.40),
+      glowListen: c(h3, 88, 60, 0.50),
+      glowTalk:   c(hd, 85, 58, 0.55),
     };
   }
 
@@ -195,7 +196,7 @@
         flex-shrink: 0;
         background:
           radial-gradient(circle at 30% 30%, rgba(255,255,255,0.42) 0%, transparent 50%),
-          conic-gradient(from 200deg at 50% 50%, ${orb.b2}, ${orb.b1}, ${orb.b3}, ${orb.b2b}, ${orb.b2});
+          conic-gradient(from 200deg at 50% 50%, ${orb.b4}, ${orb.b1}, ${orb.b2}, ${orb.b1b}, ${orb.b4});
       }
       .fluvio-fab-text {
         font-size: 14px;
@@ -506,7 +507,7 @@
         width: 85px; height: 65px;
         background: radial-gradient(circle, ${orb.b1} 0%, ${orb.b1b} 45%, transparent 70%);
         top: 45%; left: 42%;
-        opacity: 0.9;
+        opacity: 1;
         filter: blur(20px);
         animation: fluvio-blob-1 8s ease-in-out infinite;
       }
@@ -515,7 +516,7 @@
         width: 80px; height: 80px;
         background: radial-gradient(circle, ${orb.b2} 0%, ${orb.b2b} 40%, transparent 70%);
         top: 20%; left: 10%;
-        opacity: 0.95;
+        opacity: 1;
         filter: blur(18px);
         animation: fluvio-blob-2 10s ease-in-out infinite;
       }
@@ -524,7 +525,7 @@
         width: 70px; height: 60px;
         background: radial-gradient(circle, ${orb.b3} 0%, ${orb.b3b} 40%, transparent 70%);
         top: 55%; left: 5%;
-        opacity: 0.85;
+        opacity: 1;
         filter: blur(22px);
         animation: fluvio-blob-3 12s ease-in-out infinite;
       }
@@ -533,7 +534,7 @@
         width: 65px; height: 50px;
         background: radial-gradient(circle, ${orb.b4} 0%, ${orb.b4b} 40%, transparent 70%);
         top: 2%; left: 20%;
-        opacity: 0.7;
+        opacity: 0.9;
         filter: blur(16px);
         animation: fluvio-blob-4 14s ease-in-out infinite;
       }
