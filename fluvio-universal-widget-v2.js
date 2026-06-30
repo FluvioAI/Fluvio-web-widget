@@ -93,8 +93,50 @@
   // No-op retained so any remaining call sites don't throw
   function initializeLucideIcons() {}
 
+  // Derive orb palette from config.color (hex) — primary + two complementary hues
+  function orbPalette(hex) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const r = parseInt(hex.slice(0,2),16)/255, g = parseInt(hex.slice(2,4),16)/255, b = parseInt(hex.slice(4,6),16)/255;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max - min;
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if (d > 0) {
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+      else if (max === g) h = ((b - r) / d + 2) / 6;
+      else h = ((r - g) / d + 4) / 6;
+    }
+    const hd = Math.round(h * 360);
+    // Vibrant lightness for blobs — boost dim brand colors so blobs glow
+    const vl = Math.max(52, Math.min(65, Math.round(l * 100) + 12));
+    const vs = Math.round(Math.min(1, (s || 0.7) * 1.1) * 100);
+    const h2 = (hd + 150) % 360;   // complementary-ish
+    const h3 = (hd + 240) % 360;   // triad
+    const c = (h, sat, lit, alpha) => alpha != null
+      ? `hsl(${h} ${sat}% ${lit}% / ${alpha})`
+      : `hsl(${h} ${sat}% ${lit}%)`;
+    return {
+      b1:   c(hd, vs, vl),
+      b1b:  c(hd, vs, Math.max(38, vl - 16)),
+      b2:   c(h2, 72, 60),
+      b2b:  c(h2, 72, 44),
+      b3:   c(h3, 76, 56),
+      b3b:  c(h3, 76, 40),
+      b4:   c(hd, 55, 82),
+      b4b:  c(hd, 55, 72),
+      base: c(hd, 55, 9),
+      mid:  c(hd, 48, 5),
+      deep: c(hd, 40, 2),
+      glow: c(hd, 70, 45, 0.38),
+      glowListen: c(h3, 76, 56, 0.48),
+      glowTalk:   c(hd, 80, 55, 0.52),
+    };
+  }
+
   // Inject CSS styles
   function injectStyles() {
+    const orb = orbPalette(config.color);
     const css = `
       /* ── FAB: pill shape ── */
       #fluvio-fab {
@@ -394,7 +436,7 @@
         transform: none !important;
       }
 
-      /* ── Iridescent orb ── */
+      /* ── Gradient-mesh orb ── */
       #fluvio-orb-wrapper {
         position: relative;
         width: 130px;
@@ -405,14 +447,6 @@
         margin: 4px auto 10px;
         flex-shrink: 0;
       }
-      #fluvio-orb-glow {
-        position: absolute;
-        inset: -22px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(192,132,252,0.22) 0%, transparent 70%);
-        opacity: 0.8;
-        animation: fluvio-orb-breathe 4s ease-in-out infinite;
-      }
       #fluvio-orb-ripple, #fluvio-orb-ripple2 {
         position: absolute;
         inset: -8px;
@@ -420,50 +454,142 @@
         border: 2px solid rgba(168,139,250,0.3);
         opacity: 0;
       }
-      #fluvio-orb-canvas {
+
+      /* ── Core: dark sphere that blobs paint onto ── */
+      #fluvio-orb-core {
+        position: relative;
+        width: 110px;
+        height: 110px;
         border-radius: 50%;
-        display: block;
-        image-rendering: auto;
+        overflow: hidden;
+        background: radial-gradient(circle at 45% 38%, ${orb.base} 0%, ${orb.mid} 60%, ${orb.deep} 100%);
+        box-shadow:
+          0 0 48px 6px ${orb.glow},
+          inset 0 0 24px rgba(0,0,0,0.5);
+        animation: fluvio-orb-breathe 5s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+
+      /* ── Coloured blobs — screen-blend on dark base ── */
+      .fluvio-orb-blob {
+        position: absolute;
+        border-radius: 50%;
+        mix-blend-mode: screen;
+      }
+      /* Primary brand colour — bottom-right */
+      #fluvio-blob-1 {
+        width: 85px; height: 65px;
+        background: radial-gradient(circle, ${orb.b1} 0%, ${orb.b1b} 45%, transparent 70%);
+        top: 45%; left: 42%;
+        opacity: 0.9;
+        filter: blur(20px);
+        animation: fluvio-blob-1 8s ease-in-out infinite;
+      }
+      /* Complementary (+150°) — left */
+      #fluvio-blob-2 {
+        width: 80px; height: 80px;
+        background: radial-gradient(circle, ${orb.b2} 0%, ${orb.b2b} 40%, transparent 70%);
+        top: 20%; left: 10%;
+        opacity: 0.95;
+        filter: blur(18px);
+        animation: fluvio-blob-2 10s ease-in-out infinite;
+      }
+      /* Triad (+240°) — bottom-left */
+      #fluvio-blob-3 {
+        width: 70px; height: 60px;
+        background: radial-gradient(circle, ${orb.b3} 0%, ${orb.b3b} 40%, transparent 70%);
+        top: 55%; left: 5%;
+        opacity: 0.85;
+        filter: blur(22px);
+        animation: fluvio-blob-3 12s ease-in-out infinite;
+      }
+      /* Light tint of primary — top centre highlight */
+      #fluvio-blob-4 {
+        width: 65px; height: 50px;
+        background: radial-gradient(circle, ${orb.b4} 0%, ${orb.b4b} 40%, transparent 70%);
+        top: 2%; left: 20%;
+        opacity: 0.7;
+        filter: blur(16px);
+        animation: fluvio-blob-4 14s ease-in-out infinite;
+      }
+      /* Glossy specular highlight */
+      #fluvio-orb-shine {
+        position: absolute;
+        width: 52px; height: 34px;
+        background: radial-gradient(ellipse, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.08) 55%, transparent 100%);
+        top: 13px; left: 17px;
+        border-radius: 50%;
+        filter: blur(3px);
+        transform: rotate(-22deg);
+        pointer-events: none;
+      }
+
+      /* Blob drift keyframes */
+      @keyframes fluvio-blob-1 {
+        0%,100% { transform: translate(0,0) scale(1); }
+        35%      { transform: translate(-28px,-18px) scale(1.18); }
+        68%      { transform: translate(12px, 16px) scale(0.88); }
+      }
+      @keyframes fluvio-blob-2 {
+        0%,100% { transform: translate(0,0) scale(1); }
+        42%      { transform: translate(26px, 14px) scale(1.22); }
+        72%      { transform: translate(-8px,-10px) scale(0.9); }
+      }
+      @keyframes fluvio-blob-3 {
+        0%,100% { transform: translate(0,0) scale(1); }
+        50%      { transform: translate(18px,-22px) scale(1.12); }
+      }
+      @keyframes fluvio-blob-4 {
+        0%,100% { transform: translate(0,0); }
+        55%      { transform: translate(22px, 14px); }
       }
       @keyframes fluvio-orb-breathe {
-        0%, 100% { opacity: 0.7; transform: scale(1); }
-        50%       { opacity: 1;   transform: scale(1.08); }
+        0%,100% { transform: scale(1);    box-shadow: 0 0 48px 6px ${orb.glow}, inset 0 0 24px rgba(0,0,0,0.5); }
+        50%      { transform: scale(1.04); box-shadow: 0 0 64px 12px ${orb.glow}, inset 0 0 24px rgba(0,0,0,0.5); }
       }
 
-      /* listening */
-      #fluvio-orb-wrapper.listening #fluvio-orb-glow {
-        animation: fluvio-orb-listen-glow 1.6s ease-in-out infinite;
-        background: radial-gradient(circle, rgba(56,189,248,0.3) 0%, transparent 70%);
+      /* ── State variants ── */
+      /* Listening: faster blobs, triad-hue outer glow */
+      #fluvio-orb-core[data-state="listening"] {
+        animation: fluvio-orb-breathe 2.4s ease-in-out infinite;
+        box-shadow: 0 0 52px 10px ${orb.glowListen}, inset 0 0 24px rgba(0,0,0,0.5);
       }
+      #fluvio-orb-core[data-state="listening"] #fluvio-blob-1 { animation-duration: 3.5s; }
+      #fluvio-orb-core[data-state="listening"] #fluvio-blob-2 { animation-duration: 4.5s; }
+      #fluvio-orb-core[data-state="listening"] #fluvio-blob-3 { animation-duration: 5.5s; }
+      #fluvio-orb-core[data-state="listening"] #fluvio-blob-4 { animation-duration: 6s; }
+
+      /* Ripple ring during listening */
       #fluvio-orb-wrapper.listening #fluvio-orb-ripple {
         animation: fluvio-orb-ripple-out 1.8s ease-out infinite;
-        border-color: rgba(56,189,248,0.4);
-      }
-      @keyframes fluvio-orb-listen-glow {
-        0%, 100% { opacity: 0.7; }
-        50%       { opacity: 1; }
+        border-color: ${orb.glowListen};
       }
 
-      /* talking */
-      #fluvio-orb-wrapper.talking #fluvio-orb-glow {
-        animation: fluvio-orb-talk-glow 0.85s ease-in-out infinite alternate;
-        background: radial-gradient(circle, rgba(249,115,22,0.32) 0%, transparent 65%);
+      /* Talking: fast pulse */
+      #fluvio-orb-core[data-state="talking"] {
+        animation: fluvio-orb-talk-pulse 0.9s ease-in-out infinite alternate;
       }
+      #fluvio-orb-core[data-state="talking"] #fluvio-blob-1 { animation-duration: 1.5s; opacity: 1; }
+      #fluvio-orb-core[data-state="talking"] #fluvio-blob-2 { animation-duration: 1.9s; }
+      #fluvio-orb-core[data-state="talking"] #fluvio-blob-3 { animation-duration: 2.3s; }
+      #fluvio-orb-core[data-state="talking"] #fluvio-blob-4 { animation-duration: 2.8s; }
+
       #fluvio-orb-wrapper.talking #fluvio-orb-ripple {
         animation: fluvio-orb-ripple-out 1.1s ease-out infinite;
-        border-color: rgba(192,132,252,0.45);
+        border-color: ${orb.glow};
       }
       #fluvio-orb-wrapper.talking #fluvio-orb-ripple2 {
         animation: fluvio-orb-ripple-out 1.1s ease-out infinite 0.55s;
-        border-color: rgba(192,132,252,0.22);
+        border-color: ${orb.glow};
       }
-      @keyframes fluvio-orb-talk-glow {
-        0%   { opacity: 0.8; transform: scale(1); }
-        100% { opacity: 1;   transform: scale(1.1); }
+
+      @keyframes fluvio-orb-talk-pulse {
+        from { transform: scale(1);    box-shadow: 0 0 50px 8px  ${orb.glowTalk}, inset 0 0 24px rgba(0,0,0,0.5); }
+        to   { transform: scale(1.06); box-shadow: 0 0 72px 18px ${orb.glowTalk}, inset 0 0 24px rgba(0,0,0,0.5); }
       }
       @keyframes fluvio-orb-ripple-out {
-        0%   { transform: scale(0.9);  opacity: 0.5; }
-        100% { transform: scale(1.6);  opacity: 0; }
+        0%   { transform: scale(0.9); opacity: 0.5; }
+        100% { transform: scale(1.65); opacity: 0; }
       }
 
       #fluvio-orb-label {
@@ -763,7 +889,13 @@
             <div id="fluvio-orb-glow"></div>
             <div id="fluvio-orb-ripple"></div>
             <div id="fluvio-orb-ripple2"></div>
-            <canvas id="fluvio-orb-canvas"></canvas>
+            <div id="fluvio-orb-core">
+              <div class="fluvio-orb-blob" id="fluvio-blob-1"></div>
+              <div class="fluvio-orb-blob" id="fluvio-blob-2"></div>
+              <div class="fluvio-orb-blob" id="fluvio-blob-3"></div>
+              <div class="fluvio-orb-blob" id="fluvio-blob-4"></div>
+              <div id="fluvio-orb-shine"></div>
+            </div>
           </div>
           <div id="fluvio-orb-label">Ready</div>
           <div id="fluvio-voice-title">${esc(config.title)}</div>
@@ -924,121 +1056,8 @@
       orbEl.className = state;
       const labels = { idle: 'Ready', listening: 'Listening…', talking: 'Speaking…' };
       if (orbLabel) orbLabel.textContent = labels[state] || '';
-      const canvas = document.getElementById('fluvio-orb-canvas');
-      if (canvas && canvas._setOrbState) canvas._setOrbState(state);
-    }
-
-    // ── Canvas orb animation ─────────────────────────────────────────────────
-    let orbAnimFrame = null;
-
-    function initOrbCanvas() {
-      const canvas = document.getElementById('fluvio-orb-canvas');
-      if (!canvas) return;
-
-      // Draw at 74 physical px; CSS scales to 110px — the soft interpolation
-      // enhances the fluid look without the cost of a full-resolution pixel loop.
-      const D  = 74;
-      const R  = D / 2;
-      const cx = R, cy = R;
-      canvas.width  = D;
-      canvas.height = D;
-      canvas.style.width  = '110px';
-      canvas.style.height = '110px';
-
-      const ctx = canvas.getContext('2d');
-
-      // Per-state animation params
-      const STATES = {
-        idle:      { hue: 265, range:  95, spd: 0.007, sat: 0.80, lit: 0.54 },
-        listening: { hue: 200, range:  88, spd: 0.015, sat: 0.88, lit: 0.57 },
-        talking:   { hue:  20, range: 118, spd: 0.028, sat: 0.92, lit: 0.60 },
-      };
-
-      // Live params, lerped toward target each frame
-      let cur = { ...STATES.idle };
-      let tgt = { ...STATES.idle };
-      let t   = 0;
-
-      // Called by setOrbState to transition the canvas animation
-      canvas._setOrbState = s => { tgt = { ...(STATES[s] || STATES.idle) }; };
-
-      // Compact HSL→RGB  h:0-360  s/l:0-1  returns [r,g,b] 0-255
-      function hsl(h, s, l) {
-        const a = s * Math.min(l, 1 - l);
-        const f = n => {
-          const k = (n + h / 30) % 12;
-          return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
-        };
-        return [f(0) * 255 | 0, f(8) * 255 | 0, f(4) * 255 | 0];
-      }
-
-      // Pre-normalised light direction (top-left, slightly toward viewer)
-      const llx = -0.447, lly = -0.548, llz = 0.707;
-
-      function draw() {
-        // Lerp current state toward target (smooth transitions between idle/listening/talking)
-        const k = 0.045;
-        for (const p of ['hue', 'range', 'spd', 'sat', 'lit']) {
-          cur[p] += (tgt[p] - cur[p]) * k;
-        }
-        t += cur.spd;
-
-        const img = ctx.createImageData(D, D);
-        const px  = img.data;
-
-        for (let py = 0; py < D; py++) {
-          for (let ppx = 0; ppx < D; ppx++) {
-            const dx   = ppx - cx;
-            const dy   = py  - cy;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist >= R) continue;
-
-            // Unit sphere surface normal at this pixel
-            const nx = dx / R;
-            const ny = dy / R;
-            const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
-
-            // ── Fluid colour: 3-octave domain-warped sine field ──────────────
-            const q1 = Math.sin(nx * 3.8 + ny * 2.1 + t * 1.20)
-                     * Math.cos(ny * 2.9 - nx * 1.6 + t * 0.85);
-            const q2 = Math.cos(nx * 2.2 + nz * 2.8 - t * 0.75)
-                     * Math.sin(ny * 3.4 + t * 0.95);
-            const q3 = Math.sin((nx + ny) * 2.9 + nz * 2.0 + t * 1.35);
-            const fluid = q1 * 0.50 + q2 * 0.35 + q3 * 0.15; // ≈ -1..1
-
-            const hue = ((cur.hue + fluid * cur.range) + 720) % 360;
-
-            // ── 3-D shading (Lambertian diffuse + limb darkening) ────────────
-            const diff = Math.max(0, nx * llx + ny * lly + nz * llz);
-            const L    = cur.lit * (0.28 + 0.54 * diff + 0.18 * nz * nz);
-
-            const [r, g, b] = hsl(hue, cur.sat, Math.min(0.90, L));
-
-            // ── Phong specular highlight ─────────────────────────────────────
-            const dot  = nx * llx + ny * lly + nz * llz;
-            const rrz  = 2 * dot * nz - llz;           // reflected ray · view (0,0,1)
-            const spec = Math.pow(Math.max(0, rrz), 52) * 235;
-
-            // ── Small secondary glint (top-left area) ────────────────────────
-            const gx    = nx + 0.30, gy = ny + 0.22;
-            const glint = Math.pow(Math.max(0, 1 - Math.sqrt(gx * gx + gy * gy) / 0.18), 3) * 165;
-
-            // ── Sub-pixel edge anti-alias ────────────────────────────────────
-            const alpha = Math.min(1, (R - dist) / 1.2) * 255 | 0;
-
-            const i  = (py * D + ppx) * 4;
-            px[i]    = Math.min(255, r + spec + glint) | 0;
-            px[i + 1] = Math.min(255, g + spec + glint) | 0;
-            px[i + 2] = Math.min(255, b + spec + glint) | 0;
-            px[i + 3] = alpha;
-          }
-        }
-
-        ctx.putImageData(img, 0, 0);
-        orbAnimFrame = requestAnimationFrame(draw);
-      }
-
-      draw();
+      const core = document.getElementById('fluvio-orb-core');
+      if (core) core.dataset.state = state;
     }
 
     function getAgentDisplayName() {
@@ -1377,7 +1396,6 @@
     // H4: Stop call and canvas loop on page navigation
     window.addEventListener('pagehide', () => {
       if (isCallActive && client && client.stopCall) client.stopCall();
-      if (orbAnimFrame) cancelAnimationFrame(orbAnimFrame);
     });
 
     // Mode selector event handlers
@@ -1621,6 +1639,7 @@
         stopTimer();
       });
     }
+
   }
 
   // Main initialization
@@ -1650,7 +1669,6 @@
       }
 
       initializeWidget(elements);
-      initOrbCanvas();
 
     } catch (error) {
       console.error('Fluvio Widget: initialization failed', error);
