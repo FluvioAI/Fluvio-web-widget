@@ -160,7 +160,8 @@
         border: none;
         white-space: nowrap;
       }
-      #fluvio-fab:hover {
+      #fluvio-fab:hover,
+      #fluvio-fab[aria-expanded="true"] {
         animation-play-state: paused;
         transform: translateY(-4px);
         box-shadow: 0 12px 40px ${orb.glowListen};
