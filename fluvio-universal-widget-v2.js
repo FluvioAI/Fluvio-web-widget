@@ -154,14 +154,20 @@
         cursor: pointer;
         z-index: 999999;
         box-shadow: 0 8px 32px ${orb.glow};
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        transition: box-shadow 0.25s ease;
+        animation: fluvio-fab-float 3s ease-in-out infinite;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         border: none;
         white-space: nowrap;
       }
       #fluvio-fab:hover {
-        transform: translateY(-2px);
+        animation-play-state: paused;
+        transform: translateY(-4px);
         box-shadow: 0 12px 40px ${orb.glowListen};
+      }
+      @keyframes fluvio-fab-float {
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-6px); }
       }
       .fluvio-fab-orb {
         width: 36px;
