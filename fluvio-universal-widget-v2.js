@@ -37,6 +37,7 @@
     // Explicit demo mode flag — avoids substring-sniffing on real project IDs
     demoMode:     currentScript?.getAttribute('data-demo') === 'true',
     fabText:      currentScript?.getAttribute('data-fab-text') || 'Chat or Talk to...',
+    fabStyle:     currentScript?.getAttribute('data-fab-style') || 'pill', // 'pill' | 'circle'
   };
 
   // Prevent multiple instances
@@ -166,6 +167,23 @@
         transform: translateY(-4px);
         box-shadow: 0 12px 40px ${orb.glowListen};
       }
+      /* ── Circle FAB variant ── */
+      #fluvio-fab.fluvio-fab--circle {
+        width: 56px;
+        height: 56px;
+        padding: 0;
+        justify-content: center;
+        gap: 0;
+        border-radius: 50%;
+      }
+      .fluvio-fab-chevron {
+        transition: transform 0.3s ease;
+        flex-shrink: 0;
+      }
+      #fluvio-fab[aria-expanded="true"] .fluvio-fab-chevron {
+        transform: rotate(180deg);
+      }
+
       @keyframes fluvio-fab-float {
         0%, 100% { transform: translateY(0); }
         50%       { transform: translateY(-6px); }
@@ -844,10 +862,14 @@
   function createWidget() {
     document.body.classList.add(`fluvio-position-${config.position}`);
 
-    // FAB: pill shape with mini iridescent orb + text
     const fab = document.createElement('div');
     fab.id = 'fluvio-fab';
-    fab.innerHTML = `<div class="fluvio-fab-orb"></div><span class="fluvio-fab-text">${esc(config.fabText)}</span>`;
+    if (config.fabStyle === 'circle') {
+      fab.classList.add('fluvio-fab--circle');
+      fab.innerHTML = `<svg class="fluvio-fab-chevron" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+    } else {
+      fab.innerHTML = `<div class="fluvio-fab-orb"></div><span class="fluvio-fab-text">${esc(config.fabText)}</span>`;
+    }
     fab.setAttribute('aria-label', 'Open AI assistant');
     fab.setAttribute('aria-expanded', 'false');
     fab.setAttribute('role', 'button');
