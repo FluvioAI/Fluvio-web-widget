@@ -88,3 +88,7 @@ All tests in `widget-tests.html` must use `await test(...)` — the runner calls
 ## Deployment
 
 Widget files are served as static assets (GitHub Pages or any CDN). No build step. Consumers embed via a single `<script>` tag with `data-` attributes.
+
+## Git Commits
+
+Do not add `Co-Authored-By` lines to commit messages.
