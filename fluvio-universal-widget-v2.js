@@ -1021,10 +1021,10 @@
     };
   }
   // ── H1/H3: Load Retell SDK with timeout ─────────────────────────────────────
-  // Dynamic import() fallbacks removed — they bypass CSP script-src directives.
+  // UMD global: window.retellClientJsSdk.RetellWebClient (v2.x)
   // Embedders must whitelist unpkg.com or jsdelivr.net in their CSP.
   function loadRetellSDK() {
-    const RETELL_SDK_URL = 'retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
+    const RETELL_SDK_URL = 'retell-client-js-sdk@2.0.8/dist/index.umd.js';
     const loader = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = `https://unpkg.com/${RETELL_SDK_URL}`;
@@ -1322,13 +1322,13 @@
     }
 
     try {
-      // Try to find RetellWebClient
-      if (window.RetellSDK && window.RetellSDK.RetellWebClient) {
-        RetellWebClient = window.RetellSDK.RetellWebClient;
+      // UMD global in v2.x is window.retellClientJsSdk.RetellWebClient
+      if (window.retellClientJsSdk && window.retellClientJsSdk.RetellWebClient) {
+        RetellWebClient = window.retellClientJsSdk.RetellWebClient;
       } else if (window.RetellWebClient) {
         RetellWebClient = window.RetellWebClient;
-      } else if (window.Retell && window.Retell.RetellWebClient) {
-        RetellWebClient = window.Retell.RetellWebClient;
+      } else if (window.RetellSDK && window.RetellSDK.RetellWebClient) {
+        RetellWebClient = window.RetellSDK.RetellWebClient;
       } else {
         demoMode = true;
       }
