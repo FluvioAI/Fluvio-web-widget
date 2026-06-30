@@ -7,7 +7,7 @@ All widget options are set directly in the script tag using `data-` attributes. 
 ## Universal Widget — All Options
 
 ```html
-<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget-v2.js"
         data-webhook="https://hook.us2.make.com/your-webhook-url"
         data-project-id="YOUR-PROJECT-ID"
         data-mode="dual"
@@ -16,10 +16,12 @@ All widget options are set directly in the script tag using `data-` attributes. 
         data-position="bottom-right"
         data-title="AI Assistant"
         data-subtitle="Voice & Chat Support"
+        data-fab-text="Chat or Talk to..."
         data-agent-name="Sarah"
         data-company-name="Acme Corp"
         data-company-hours="Mon–Fri, 9am–6pm"
-        data-greeting="Hi! I am Sarah from Acme Corp. How can I help you today?"></script>
+        data-greeting="Hi! I am Sarah from Acme Corp. How can I help you today?"
+        data-chat-greeting="Hello! Type your question and I'll help you right away."></script>
 ```
 
 ### Complete Options Reference
@@ -30,15 +32,17 @@ All widget options are set directly in the script tag using `data-` attributes. 
 | `data-project-id` | Yes | — | Your Fluvio project ID |
 | `data-mode` | No | `dual` | Widget mode: `dual`, `voice`, or `chat` |
 | `data-default-mode` | No | `voice` | Which tab opens first: `voice` or `chat` |
-| `data-color` | No | `#347D9B` | Primary brand color (hex format) |
+| `data-color` | No | `#347D9B` | Primary brand color (hex format) — also sets the orb color |
 | `data-position` | No | `bottom-right` | Corner of the screen: `bottom-right`, `bottom-left`, `top-right`, `top-left` |
 | `data-title` | No | `AI Assistant` | Title shown in the widget header |
 | `data-subtitle` | No | `Voice & Chat Support` | Subtitle shown below the title |
+| `data-fab-text` | No | `Chat or Talk to...` | Text shown on the floating button |
 | `data-agent-name` | No | `AI` | Name of your AI agent |
 | `data-company-name` | No | — | Your company name |
 | `data-company-hours` | No | — | Business hours, shown to the visitor |
 | `data-company-address` | No | — | Your business address |
-| `data-greeting` | No | — | Opening message shown when chat starts |
+| `data-greeting` | No | — | Opening message shown when voice or chat starts |
+| `data-chat-greeting` | No | — | Chat-specific opening message (overrides `data-greeting` for chat) |
 
 ---
 
@@ -173,7 +177,7 @@ By default the button inherits your website's styles. To apply a custom look, ad
 ### Support Page — Floating Widget
 
 ```html
-<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget-v2.js"
         data-webhook="https://hook.us2.make.com/your-webhook-url"
         data-project-id="YOUR-PROJECT-ID"
         data-mode="chat"

@@ -4,43 +4,87 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a no-build, vanilla JavaScript embeddable widget project. There is no package.json, no bundler, and no test runner. Development is done by editing the JS files directly and opening HTML files in a browser.
+A no-build, vanilla JavaScript embeddable widget project. No package.json, no bundler, no test runner. Edit JS files directly and open HTML files in a browser to test.
 
 ## Architecture
 
-Two independent IIFE widget scripts, each self-contained with no shared modules:
+Two independent IIFE widget scripts, each self-contained with no shared modules.
 
-### `fluvio-universal-widget.js`
-A floating FAB (Floating Action Button) that opens a panel. Configured entirely via `data-` attributes on its `<script>` tag. Supports three modes:
-- `voice` — Retell WebRTC voice call only
-- `chat` — text chat only
-- `dual` — tabbed interface with both
+### `fluvio-universal-widget-v2.js` — Active development target
+The redesigned floating widget. All new work goes here. The original `fluvio-universal-widget.js` is NEVER modified.
 
 **Initialization flow:**
-1. Read config from `document.currentScript` attributes at load time
-2. Load Lucide icons and the Retell SDK from CDN (unpkg → jsdelivr → skypack → esm.sh fallback chain)
-3. Inject all CSS into a `<style>` tag (styles use template literals with `config.color` interpolated directly)
-4. Build and append DOM (FAB button + panel)
-5. Set up event listeners via `initializeWidget(elements)`
+1. Read config from `document.currentScript` data attributes at load time
+2. Load Lucide icons and Retell SDK from CDN (unpkg → jsdelivr fallback chain with timeouts)
+3. Call `orbPalette(config.color)` to derive the orb color palette from the brand color
+4. Inject all CSS via `injectStyles()` — styles use template literals with config values and `orb.*` palette interpolated directly
+5. Build and append DOM via `createWidget()` — returns element references
+6. Set up all event listeners via `initializeWidget(elements)`
 
-**Voice calls:** POST to `config.webhook` with `{ project_id, mode: 'voice', dynamic_variables }` → webhook returns `{ access_token }` → pass to `retellClient.startCall()`
+**Panel views (3-state):** `switchView(view)` manages `'landing' | 'voice' | 'chat'`
+- Landing: mode-selection screen shown on open when `mode === 'dual'`
+- Voice: orb, timer, call button, status
+- Chat: message list, input, send button
 
-**Chat:** POST to `config.webhook` with `{ project_id, mode: 'chat', action: 'create_session' | 'send_message', ... }` → receive AI reply and render in message list
+**Orb:** Pure CSS gradient-mesh — `#fluvio-orb-core` contains 4 `.fluvio-orb-blob` divs with `mix-blend-mode: screen` on a dark base. State driven by `core.dataset.state` (`idle | listening | talking`). Colors derived from `orbPalette()` at inject time.
+
+**`setOrbState(state)`:** Sets `orbEl.className` + `core.dataset.state`. CSS handles animation speed changes via `animation-duration` overrides.
+
+**Voice calls:** POST to `config.webhook` → `{ access_token }` → `retellClient.startCall()`
+
+**Chat:** POST to `config.webhook` with `action: 'create_session' | 'send_message'`
+
+**Call timer:** `startTimer()` / `stopTimer()` — updates `#fluvio-timer` every second
+
+### `fluvio-universal-widget.js` — Original (do not modify)
+Stable production version. Leave untouched.
 
 ### `fluvio-button-widget.js`
-Scans for all `.fluvio-call-btn` elements at load time and attaches click handlers. Each button carries its own `data-webhook` and `data-project-id` attributes. Only handles voice calls (no chat). Uses the same Retell SDK and Make.com webhook pattern.
+Scans for `.fluvio-call-btn` elements and attaches voice-only call handlers. Uses the same Retell SDK and webhook pattern.
 
 ## Key Constraints
 
-- **No `window` globals assumed** — both files guard against double-loading with `window.FluvioWidgetLoaded` / `window.FluvioButtonLoaded`
-- **CSS is injected via `<style>` tag** — all styles live inside `injectStyles()` as a template literal; brand color is interpolated at runtime, not compile time
-- **Dynamic variables** map from `data-*` HTML attributes to the snake_case keys the Retell/Make.com backend expects (e.g. `data-agent-name` → `AI_agent`, `data-company-name` → `company_name`)
-- **Greeting placeholders** (`{{AI_agent}}`, `{{company_name}}`, etc.) are resolved client-side before display
+- **No `window` globals assumed** — guards: `window.FluvioWidgetLoaded` / `window.FluvioButtonWidgetLoaded`
+- **CSS is injected via `<style>` tag** — all styles in `injectStyles()` as template literal; brand color and orb palette interpolated at runtime
+- **Dynamic variables** map from `data-*` attributes to snake_case keys for the Retell/Make.com backend
+- **Greeting placeholders** (`{{AI_agent}}`, `{{company_name}}`, etc.) resolved client-side before display
+- **XSS protection** — all config values interpolated into HTML use `esc()` helper; webhook responses use `textContent`
+
+## Configuration Attributes (v2)
+
+| Attribute | Default | Notes |
+|-----------|---------|-------|
+| `data-webhook` | — | Required. Must be `https://` |
+| `data-project-id` | — | Required |
+| `data-color` | `#347D9B` | Drives all UI color including orb palette |
+| `data-mode` | `dual` | `dual \| voice \| chat` |
+| `data-default-mode` | `voice` | First tab when entering voice/chat from landing |
+| `data-position` | `bottom-right` | FAB corner position |
+| `data-title` | `AI Assistant` | Panel header title |
+| `data-subtitle` | `Voice & Chat Support` | Panel header subtitle |
+| `data-fab-text` | `Chat or Talk to...` | Text shown on the pill FAB |
+| `data-agent-name` | — | AI agent display name |
+| `data-agent-title` | — | AI agent title |
+| `data-company-name` | — | Company name |
+| `data-company-hours` | — | Business hours |
+| `data-company-address` | — | Company address |
+| `data-greeting` | — | Voice greeting message |
+| `data-chat-greeting` | — | Chat-specific greeting (overrides `data-greeting`) |
+| `data-demo` | `false` | Set `"true"` to enable demo mode (no real webhook calls) |
 
 ## Testing
 
-Open any of the `test-*.html` files directly in a browser — no server required. `index.html` is the main interactive demo. These files embed the widget scripts locally and let you test configuration changes without deploying.
+Open test files directly in a browser — no server required.
+
+| File | Purpose |
+|------|---------|
+| `test-v2-widget.html` | Live demo of the v2 redesign |
+| `widget-tests.html` | Automated test suite (77 tests, 12 suites) |
+| `test-button-widget.html` | Button widget demo |
+| `index.html` | Interactive configuration tester for v1 |
+
+All tests in `widget-tests.html` must use `await test(...)` — the runner calls `renderResults()` after awaiting all tests.
 
 ## Deployment
 
-The widget files are served as static assets (GitHub Pages or any CDN). No build step. Consumers embed via a single `<script>` tag with `data-` attributes.
+Widget files are served as static assets (GitHub Pages or any CDN). No build step. Consumers embed via a single `<script>` tag with `data-` attributes.
