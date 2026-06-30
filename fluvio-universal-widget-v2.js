@@ -153,7 +153,7 @@
         gap: 10px;
         cursor: pointer;
         z-index: 999999;
-        box-shadow: 0 8px 32px rgba(52,125,155,0.35);
+        box-shadow: 0 8px 32px ${orb.glow};
         transition: transform 0.25s ease, box-shadow 0.25s ease;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         border: none;
@@ -161,7 +161,7 @@
       }
       #fluvio-fab:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(52,125,155,0.45);
+        box-shadow: 0 12px 40px ${orb.glowListen};
       }
       .fluvio-fab-orb {
         width: 36px;
@@ -170,7 +170,7 @@
         flex-shrink: 0;
         background:
           radial-gradient(circle at 30% 30%, rgba(255,255,255,0.42) 0%, transparent 50%),
-          conic-gradient(from 200deg at 50% 50%, #c084fc, #f97316, #38bdf8, #a78bfa, #c084fc);
+          conic-gradient(from 200deg at 50% 50%, ${orb.b2}, ${orb.b1}, ${orb.b3}, ${orb.b2b}, ${orb.b2});
       }
       .fluvio-fab-text {
         font-size: 14px;
