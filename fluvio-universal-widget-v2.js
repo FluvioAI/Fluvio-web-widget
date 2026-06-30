@@ -1025,8 +1025,10 @@
   // into one self-contained ESM module. No script tags or globals needed.
   // CSP requirement: script-src https://esm.sh
   async function loadRetellSDK() {
-    const load = import('https://esm.sh/retell-client-js-sdk@2.0.8');
-    const mod = await withTimeout(load, 15000, Promise.reject(new Error('Retell SDK load timed out')));
+    const mod = await Promise.race([
+      import('https://esm.sh/retell-client-js-sdk@2.0.8'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Retell SDK load timed out')), 15000)),
+    ]);
     if (!mod || !mod.RetellWebClient) throw new Error('RetellWebClient not found in SDK module');
     return mod.RetellWebClient;
   }
