@@ -1330,8 +1330,8 @@
 
     function closePanel() {
       if (isCallActive) {
-        if (client && client.stopCall) client.stopCall();
         isCallActive = false;
+        if (client && client.stopCall) { try { client.stopCall(); } catch (e) {} }
         elements.callButton.className = 'start';
         elements.callButton.disabled = false;
         elements.callText.textContent = 'Start to call';
@@ -1402,7 +1402,7 @@
 
     // H4: Stop call and canvas loop on page navigation
     window.addEventListener('pagehide', () => {
-      if (isCallActive && client && client.stopCall) client.stopCall();
+      if (isCallActive && client && client.stopCall) { isCallActive = false; try { client.stopCall(); } catch (e) {} }
     });
 
     // Mode selector event handlers
@@ -1553,7 +1553,6 @@
           const callOptions = {
             accessToken: accessToken,
             sampleRate: 24000,
-            enableUpdate: true
           };
 
           if (webhookData.call_inbound && webhookData.call_inbound.dynamic_variables) {
@@ -1580,17 +1579,18 @@
           elements.callButton.disabled = false;
         }
       } else {
+        // Reset UI immediately — don't wait for call_ended event
+        elements.statusEl.textContent = 'Offline';
+        elements.statusEl.className = 'offline';
+        isCallActive = false;
+        elements.callButton.className = 'start';
+        elements.callButton.disabled = false;
+        elements.callText.textContent = 'Start to call';
+        elements.callIcon.innerHTML = createIcon('Phone');
+        setOrbState('idle');
+        stopTimer();
         if (client && client.stopCall) {
-          client.stopCall();
-        } else {
-          elements.statusEl.textContent = 'Offline';
-          elements.statusEl.className = 'offline';
-          isCallActive = false;
-          elements.callButton.className = 'start';
-          elements.callButton.disabled = false;
-          elements.callText.textContent = 'Start to call';
-          elements.callIcon.innerHTML = createIcon('Phone');
-          stopTimer();
+          try { client.stopCall(); } catch (e) { console.warn('Fluvio Widget: stopCall error', e); }
         }
       }
     });
@@ -1610,6 +1610,8 @@
       });
 
       client.on('call_ended', () => {
+        // Guard: if user already clicked End Call, UI is already reset
+        if (!isCallActive) return;
         elements.statusEl.textContent = 'Offline';
         elements.statusEl.className = 'offline';
         isCallActive = false;
