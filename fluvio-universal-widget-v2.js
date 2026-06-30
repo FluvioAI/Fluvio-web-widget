@@ -1020,36 +1020,22 @@
       timerEl:        document.getElementById('fluvio-timer'),
     };
   }
-  // ── H1/H3: Load Retell SDK with timeout ─────────────────────────────────────
-  // UMD global: window.retellClientJsSdk.RetellWebClient (v2.x)
-  // Embedders must whitelist unpkg.com or jsdelivr.net in their CSP.
-  function loadRetellSDK() {
-    const RETELL_SDK_URL = 'retell-client-js-sdk@2.0.8/dist/index.umd.js';
-    const loader = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = `https://unpkg.com/${RETELL_SDK_URL}`;
-
-      script.onload = resolve;
-      script.onerror = () => {
-        const script2 = document.createElement('script');
-        script2.src = `https://cdn.jsdelivr.net/npm/${RETELL_SDK_URL}`;
-        script2.onload = resolve;
-        script2.onerror = () => reject(new Error('Retell SDK failed to load from all CDNs'));
-        document.head.appendChild(script2);
-      };
-
-      document.head.appendChild(script);
-    });
-
-    return withTimeout(loader, 10000, Promise.reject(new Error('Retell SDK load timed out')));
+  // ── Load Retell SDK — returns RetellWebClient class directly ────────────────
+  // Uses esm.sh which bundles all peer deps (eventemitter3, livekit-client)
+  // into one self-contained ESM module. No script tags or globals needed.
+  // CSP requirement: script-src https://esm.sh
+  async function loadRetellSDK() {
+    const load = import('https://esm.sh/retell-client-js-sdk@2.0.8');
+    const mod = await withTimeout(load, 15000, Promise.reject(new Error('Retell SDK load timed out')));
+    if (!mod || !mod.RetellWebClient) throw new Error('RetellWebClient not found in SDK module');
+    return mod.RetellWebClient;
   }
 
   // Initialize widget functionality
-  function initializeWidget(elements) {
-    let RetellWebClient;
+  function initializeWidget(elements, RetellWebClient) {
     let client;
     let isCallActive = false;
-    let demoMode = false;
+    let demoMode = config.demoMode || !RetellWebClient;
     let currentMode = config.defaultMode;
     let currentChatId = null;
     let chatHistory = [];
@@ -1322,17 +1308,6 @@
     }
 
     try {
-      // UMD global in v2.x is window.retellClientJsSdk.RetellWebClient
-      if (window.retellClientJsSdk && window.retellClientJsSdk.RetellWebClient) {
-        RetellWebClient = window.retellClientJsSdk.RetellWebClient;
-      } else if (window.RetellWebClient) {
-        RetellWebClient = window.RetellWebClient;
-      } else if (window.RetellSDK && window.RetellSDK.RetellWebClient) {
-        RetellWebClient = window.RetellSDK.RetellWebClient;
-      } else {
-        demoMode = true;
-      }
-
       if (!demoMode) {
         client = new RetellWebClient();
       }
@@ -1688,16 +1663,16 @@
       injectStyles();
       const elements = createWidget();
 
-      // H1: Retell SDK load is time-bounded — falls back to demo mode on failure
+      let RetellWebClientClass = null;
       if (config.mode === 'voice' || config.mode === 'dual') {
         try {
-          await loadRetellSDK();
+          RetellWebClientClass = await loadRetellSDK();
         } catch (error) {
           console.warn('Fluvio Widget: Voice SDK unavailable, running in demo mode.', error.message);
         }
       }
 
-      initializeWidget(elements);
+      initializeWidget(elements, RetellWebClientClass);
 
     } catch (error) {
       console.error('Fluvio Widget: initialization failed', error);
