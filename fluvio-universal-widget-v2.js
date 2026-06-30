@@ -109,29 +109,30 @@
       else h = ((r - g) / d + 4) / 6;
     }
     const hd = Math.round(h * 360);
-    // Blob lightness: floor at 65% so blobs visibly contrast with base.
-    const vl = Math.max(65, Math.min(75, Math.round(l * 100) + 28));
-    const vs = Math.round(Math.min(1, (s || 0.7) * 1.5) * 100);
+    // Jewel look: vivid saturated base, lighter shimmer blobs on top.
+    const vs = Math.round(Math.min(1, (s || 0.7) * 1.3) * 100);
     const h2 = (hd + 150) % 360;
     const h3 = (hd + 240) % 360;
     const c = (h, sat, lit, alpha) => alpha != null
       ? `hsl(${h} ${sat}% ${lit}% / ${alpha})`
       : `hsl(${h} ${sat}% ${lit}%)`;
     return {
-      b1:   c(hd, vs, vl),
-      b1b:  c(hd, vs, Math.max(50, vl - 18)),
-      b2:   c(h2, 85, 68),
-      b2b:  c(h2, 85, 52),
-      b3:   c(h3, 88, 65),
-      b3b:  c(h3, 88, 50),
-      b4:   c(hd, 60, 85),
-      b4b:  c(hd, 60, 75),
-      base: c(hd, 65, 30),
-      mid:  c(hd, 60, 18),
-      deep: c(hd, 50, 10),
-      glow: c(hd, 80, 55, 0.50),
-      glowListen: c(h3, 88, 62, 0.60),
-      glowTalk:   c(hd, 90, 60, 0.65),
+      // Shimmer facet blobs — lighter than base so they catch "light"
+      b1:   c(hd, vs, 78),
+      b1b:  c(hd, vs, 62),
+      b2:   c(h2, 82, 74),
+      b2b:  c(h2, 82, 58),
+      b3:   c(h3, 86, 72),
+      b3b:  c(h3, 86, 56),
+      b4:   c(hd, 50, 92),   // near-white top specular facet
+      b4b:  c(hd, 55, 80),
+      // Base: rich saturated jewel color, darker at the edges for depth
+      base: c(hd, 90, 48),
+      mid:  c(hd, 85, 32),
+      deep: c(hd, 78, 18),
+      glow: c(hd, 90, 55, 0.55),
+      glowListen: c(h3, 88, 65, 0.65),
+      glowTalk:   c(hd, 95, 62, 0.70),
     };
   }
 
@@ -480,17 +481,17 @@
         opacity: 0;
       }
 
-      /* ── Core: brand-coloured sphere — blobs alpha-composite on top ── */
+      /* ── Core: vivid jewel sphere — shimmer blobs on top ── */
       #fluvio-orb-core {
         position: relative;
         width: 110px;
         height: 110px;
         border-radius: 50%;
         overflow: hidden;
-        background: radial-gradient(circle at 45% 38%, ${orb.base} 0%, ${orb.mid} 60%, ${orb.deep} 100%);
+        background: radial-gradient(circle at 42% 36%, ${orb.base} 0%, ${orb.mid} 55%, ${orb.deep} 100%);
         box-shadow:
-          0 0 48px 6px ${orb.glow},
-          inset 0 0 24px rgba(0,0,0,0.5);
+          0 0 52px 10px ${orb.glow},
+          inset 0 0 30px ${orb.deep};
         animation: fluvio-orb-breathe 5s ease-in-out infinite;
         flex-shrink: 0;
       }
@@ -500,40 +501,40 @@
         position: absolute;
         border-radius: 50%;
       }
-      /* Primary brand colour — center/bottom */
+      /* Primary shimmer — center */
       #fluvio-blob-1 {
         width: 100px; height: 100px;
         background: radial-gradient(circle, ${orb.b1} 0%, ${orb.b1b} 50%, transparent 75%);
-        top: 30%; left: 25%;
-        opacity: 0.88;
-        filter: blur(18px);
+        top: 28%; left: 22%;
+        opacity: 0.75;
+        filter: blur(16px);
         animation: fluvio-blob-1 8s ease-in-out infinite;
       }
-      /* Complementary (+150°) — top-left */
+      /* Complementary shimmer — top-left facet */
       #fluvio-blob-2 {
         width: 95px; height: 95px;
         background: radial-gradient(circle, ${orb.b2} 0%, ${orb.b2b} 45%, transparent 72%);
-        top: 5%; left: 0%;
-        opacity: 0.82;
-        filter: blur(16px);
+        top: 2%; left: -2%;
+        opacity: 0.70;
+        filter: blur(14px);
         animation: fluvio-blob-2 10s ease-in-out infinite;
       }
-      /* Triad (+240°) — bottom-left */
+      /* Triad shimmer — bottom-right facet */
       #fluvio-blob-3 {
         width: 85px; height: 85px;
         background: radial-gradient(circle, ${orb.b3} 0%, ${orb.b3b} 45%, transparent 72%);
-        top: 50%; left: 5%;
-        opacity: 0.80;
-        filter: blur(20px);
+        top: 48%; left: 20%;
+        opacity: 0.68;
+        filter: blur(18px);
         animation: fluvio-blob-3 12s ease-in-out infinite;
       }
-      /* Light tint of primary — top-centre highlight */
+      /* Near-white top specular — crown of the gem */
       #fluvio-blob-4 {
-        width: 80px; height: 70px;
-        background: radial-gradient(circle, ${orb.b4} 0%, ${orb.b4b} 45%, transparent 72%);
-        top: 0%; left: 18%;
-        opacity: 0.72;
-        filter: blur(14px);
+        width: 70px; height: 55px;
+        background: radial-gradient(circle, ${orb.b4} 0%, ${orb.b4b} 40%, transparent 70%);
+        top: 0%; left: 20%;
+        opacity: 0.65;
+        filter: blur(12px);
         animation: fluvio-blob-4 14s ease-in-out infinite;
       }
       /* Glossy specular highlight */
@@ -568,15 +569,15 @@
         55%      { transform: translate(22px, 14px); }
       }
       @keyframes fluvio-orb-breathe {
-        0%,100% { transform: scale(1);    box-shadow: 0 0 48px 6px ${orb.glow}, inset 0 0 24px rgba(0,0,0,0.5); }
-        50%      { transform: scale(1.04); box-shadow: 0 0 64px 12px ${orb.glow}, inset 0 0 24px rgba(0,0,0,0.5); }
+        0%,100% { transform: scale(1);    box-shadow: 0 0 52px 10px ${orb.glow}, inset 0 0 30px ${orb.deep}; }
+        50%      { transform: scale(1.04); box-shadow: 0 0 72px 16px ${orb.glow}, inset 0 0 30px ${orb.deep}; }
       }
 
       /* ── State variants ── */
       /* Listening: faster blobs, triad-hue outer glow */
       #fluvio-orb-core[data-state="listening"] {
         animation: fluvio-orb-breathe 2.4s ease-in-out infinite;
-        box-shadow: 0 0 52px 10px ${orb.glowListen}, inset 0 0 24px rgba(0,0,0,0.5);
+        box-shadow: 0 0 56px 12px ${orb.glowListen}, inset 0 0 30px ${orb.deep};
       }
       #fluvio-orb-core[data-state="listening"] #fluvio-blob-1 { animation-duration: 3.5s; }
       #fluvio-orb-core[data-state="listening"] #fluvio-blob-2 { animation-duration: 4.5s; }
@@ -608,8 +609,8 @@
       }
 
       @keyframes fluvio-orb-talk-pulse {
-        from { transform: scale(1);    box-shadow: 0 0 50px 8px  ${orb.glowTalk}, inset 0 0 24px rgba(0,0,0,0.5); }
-        to   { transform: scale(1.06); box-shadow: 0 0 72px 18px ${orb.glowTalk}, inset 0 0 24px rgba(0,0,0,0.5); }
+        from { transform: scale(1);    box-shadow: 0 0 56px 10px ${orb.glowTalk}, inset 0 0 30px ${orb.deep}; }
+        to   { transform: scale(1.06); box-shadow: 0 0 80px 22px ${orb.glowTalk}, inset 0 0 30px ${orb.deep}; }
       }
       @keyframes fluvio-orb-ripple-out {
         0%   { transform: scale(0.9); opacity: 0.5; }
