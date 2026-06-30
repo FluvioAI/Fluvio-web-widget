@@ -109,8 +109,7 @@
       else h = ((r - g) / d + 4) / 6;
     }
     const hd = Math.round(h * 360);
-    // mix-blend-mode:screen needs high lightness to glow on a dark base.
-    // Floor at 65%, cap at 75% — any lower and dark brand colors look black.
+    // Blob lightness: floor at 65% so blobs visibly contrast with base.
     const vl = Math.max(65, Math.min(75, Math.round(l * 100) + 28));
     const vs = Math.round(Math.min(1, (s || 0.7) * 1.5) * 100);
     const h2 = (hd + 150) % 360;
@@ -127,12 +126,12 @@
       b3b:  c(h3, 88, 50),
       b4:   c(hd, 60, 85),
       b4b:  c(hd, 60, 75),
-      base: c(hd, 60, 8),
-      mid:  c(hd, 50, 4),
-      deep: c(hd, 40, 2),
-      glow: c(hd, 75, 50, 0.40),
-      glowListen: c(h3, 88, 60, 0.50),
-      glowTalk:   c(hd, 85, 58, 0.55),
+      base: c(hd, 65, 30),
+      mid:  c(hd, 60, 18),
+      deep: c(hd, 50, 10),
+      glow: c(hd, 80, 55, 0.50),
+      glowListen: c(h3, 88, 62, 0.60),
+      glowTalk:   c(hd, 90, 60, 0.65),
     };
   }
 
@@ -481,7 +480,7 @@
         opacity: 0;
       }
 
-      /* ── Core: dark sphere that blobs paint onto ── */
+      /* ── Core: brand-coloured sphere — blobs alpha-composite on top ── */
       #fluvio-orb-core {
         position: relative;
         width: 110px;
@@ -496,46 +495,45 @@
         flex-shrink: 0;
       }
 
-      /* ── Coloured blobs — screen-blend on dark base ── */
+      /* ── Coloured blobs — alpha-composite on branded base ── */
       .fluvio-orb-blob {
         position: absolute;
         border-radius: 50%;
-        mix-blend-mode: screen;
       }
-      /* Primary brand colour — bottom-right */
+      /* Primary brand colour — center/bottom */
       #fluvio-blob-1 {
-        width: 85px; height: 65px;
-        background: radial-gradient(circle, ${orb.b1} 0%, ${orb.b1b} 45%, transparent 70%);
-        top: 45%; left: 42%;
-        opacity: 1;
-        filter: blur(20px);
+        width: 100px; height: 100px;
+        background: radial-gradient(circle, ${orb.b1} 0%, ${orb.b1b} 50%, transparent 75%);
+        top: 30%; left: 25%;
+        opacity: 0.88;
+        filter: blur(18px);
         animation: fluvio-blob-1 8s ease-in-out infinite;
       }
-      /* Complementary (+150°) — left */
+      /* Complementary (+150°) — top-left */
       #fluvio-blob-2 {
-        width: 80px; height: 80px;
-        background: radial-gradient(circle, ${orb.b2} 0%, ${orb.b2b} 40%, transparent 70%);
-        top: 20%; left: 10%;
-        opacity: 1;
-        filter: blur(18px);
+        width: 95px; height: 95px;
+        background: radial-gradient(circle, ${orb.b2} 0%, ${orb.b2b} 45%, transparent 72%);
+        top: 5%; left: 0%;
+        opacity: 0.82;
+        filter: blur(16px);
         animation: fluvio-blob-2 10s ease-in-out infinite;
       }
       /* Triad (+240°) — bottom-left */
       #fluvio-blob-3 {
-        width: 70px; height: 60px;
-        background: radial-gradient(circle, ${orb.b3} 0%, ${orb.b3b} 40%, transparent 70%);
-        top: 55%; left: 5%;
-        opacity: 1;
-        filter: blur(22px);
+        width: 85px; height: 85px;
+        background: radial-gradient(circle, ${orb.b3} 0%, ${orb.b3b} 45%, transparent 72%);
+        top: 50%; left: 5%;
+        opacity: 0.80;
+        filter: blur(20px);
         animation: fluvio-blob-3 12s ease-in-out infinite;
       }
-      /* Light tint of primary — top centre highlight */
+      /* Light tint of primary — top-centre highlight */
       #fluvio-blob-4 {
-        width: 65px; height: 50px;
-        background: radial-gradient(circle, ${orb.b4} 0%, ${orb.b4b} 40%, transparent 70%);
-        top: 2%; left: 20%;
-        opacity: 0.9;
-        filter: blur(16px);
+        width: 80px; height: 70px;
+        background: radial-gradient(circle, ${orb.b4} 0%, ${orb.b4b} 45%, transparent 72%);
+        top: 0%; left: 18%;
+        opacity: 0.72;
+        filter: blur(14px);
         animation: fluvio-blob-4 14s ease-in-out infinite;
       }
       /* Glossy specular highlight */
