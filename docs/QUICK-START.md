@@ -33,10 +33,11 @@ Open your website's HTML file and paste the code just before the closing `</body
 ### Universal Widget (Floating Button)
 
 ```html
-<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget-v2.js"
         data-webhook="https://hook.us2.make.com/your-webhook-url"
         data-project-id="YOUR-PROJECT-ID"
         data-mode="dual"
+        data-color="#347D9B"
         data-title="AI Assistant"
         data-subtitle="Voice & Chat Support"></script>
 ```
@@ -62,7 +63,7 @@ Add the `fluvio-call-btn` class to an existing button, then load the script:
 Add any of the following options to personalize the widget:
 
 ```html
-<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js"
+<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget-v2.js"
         data-webhook="https://hook.us2.make.com/your-webhook-url"
         data-project-id="YOUR-PROJECT-ID"
         data-mode="dual"
@@ -110,7 +111,7 @@ Install the "Insert Headers and Footers" plugin, then paste the script tag into 
 Alternatively, add it directly to your theme's `functions.php`:
 ```php
 function add_fluvio_widget() {
-    echo '<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget.js" data-webhook="YOUR-WEBHOOK" data-project-id="YOUR-PROJECT-ID"></script>';
+    echo '<script src="https://YOUR-HOSTING-URL/fluvio-universal-widget-v2.js" data-webhook="YOUR-WEBHOOK" data-project-id="YOUR-PROJECT-ID"></script>';
 }
 add_action('wp_footer', 'add_fluvio_widget');
 ```

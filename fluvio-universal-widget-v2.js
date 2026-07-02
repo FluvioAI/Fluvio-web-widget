@@ -207,7 +207,15 @@
         text-overflow: ellipsis;
       }
 
-      /* ── Panel ── */
+      /* ── Panel (transitions-dev panel reveal) ── */
+      /* Universal install: panel reveal custom properties */
+      :root {
+        --panel-open-dur: 400ms;
+        --panel-close-dur: 350ms;
+        --panel-translate-y: 100px;
+        --panel-blur: 2px;
+        --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+      }
       #fluvio-panel {
         position: fixed;
         bottom: 84px;
@@ -219,15 +227,52 @@
         border-radius: 20px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.15);
         z-index: 999999;
-        display: none;
+        display: flex;
         flex-direction: column;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow: hidden;
-        animation: fluvio-slideUp 0.3s ease-out;
+        /* Hidden by default — shown via data-open */
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(var(--panel-translate-y));
+        filter: blur(var(--panel-blur));
+        transition:
+          opacity var(--panel-open-dur) var(--panel-ease),
+          transform var(--panel-open-dur) var(--panel-ease),
+          filter var(--panel-open-dur) var(--panel-ease),
+          visibility 0s var(--panel-open-dur);
       }
-      @keyframes fluvio-slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
+      /* Open state */
+      #fluvio-panel[data-open] {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+        transition:
+          opacity var(--panel-open-dur) var(--panel-ease),
+          transform var(--panel-open-dur) var(--panel-ease),
+          filter var(--panel-open-dur) var(--panel-ease),
+          visibility 0s 0s;
+      }
+      /* Closing state — slides down + blur out */
+      #fluvio-panel.is-closing {
+        opacity: 0;
+        transform: translateY(var(--panel-translate-y));
+        filter: blur(var(--panel-blur));
+        transition:
+          opacity var(--panel-close-dur) var(--panel-ease),
+          transform var(--panel-close-dur) var(--panel-ease),
+          filter var(--panel-close-dur) var(--panel-ease),
+          visibility 0s var(--panel-close-dur);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #fluvio-panel,
+        #fluvio-panel[data-open],
+        #fluvio-panel.is-closing {
+          transition: opacity 0.15s ease, visibility 0s 0s;
+          transform: none;
+          filter: none;
+        }
       }
 
       /* ── Header: white ── */
@@ -1340,26 +1385,39 @@
         elements.statusEl.className = 'offline';
         stopTimer();
       }
-      elements.panel.style.display = 'none';
+      // Panel reveal close: add .is-closing, remove data-open after transition
+      var panel = elements.panel;
+      if (!panel.hasAttribute('data-open')) return;
+      panel.classList.add('is-closing');
+      panel.removeAttribute('data-open');
+      var closeDur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--panel-close-dur')) || 350;
+      setTimeout(function () {
+        panel.classList.remove('is-closing');
+      }, closeDur);
       elements.fab.setAttribute('aria-expanded', 'false');
       elements.fab.focus();
     }
 
     function openPanel() {
       if (elements.panel.adjustPosition) elements.panel.adjustPosition();
-      elements.panel.style.display = 'flex';
+      var panel = elements.panel;
+      // Remove lingering close class, then set data-open
+      panel.classList.remove('is-closing');
+      // Force reflow so transition replays from closed state
+      void panel.offsetWidth;
+      panel.setAttribute('data-open', '');
       elements.fab.setAttribute('aria-expanded', 'true');
       if (config.mode === 'dual') {
         switchView('landing');
       } else {
         switchMode(config.mode);
       }
-      const closeBtn = document.getElementById('fluvio-close');
-      if (closeBtn) setTimeout(() => closeBtn.focus(), 50);
+      var closeBtn = document.getElementById('fluvio-close');
+      if (closeBtn) setTimeout(function () { closeBtn.focus(); }, 50);
     }
 
     elements.fab.addEventListener('click', () => {
-      elements.panel.style.display === 'flex' ? closePanel() : openPanel();
+      elements.panel.hasAttribute('data-open') ? closePanel() : openPanel();
     });
 
     elements.fab.addEventListener('keydown', (e) => {
@@ -1368,7 +1426,7 @@
 
     // M5: Escape key closes panel
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && elements.panel.style.display === 'flex') closePanel();
+      if (e.key === 'Escape' && elements.panel.hasAttribute('data-open')) closePanel();
     });
 
     // Landing card clicks
@@ -1387,7 +1445,7 @@
     // H5: Throttled resize/scroll with RAF
     let rafPending = false;
     function throttledAdjust() {
-      if (rafPending || elements.panel.style.display !== 'flex') return;
+      if (rafPending || !elements.panel.hasAttribute('data-open')) return;
       rafPending = true;
       requestAnimationFrame(() => {
         if (elements.panel.adjustPosition) elements.panel.adjustPosition();
@@ -1435,7 +1493,7 @@
         e.target.style.height = newHeight + 'px';
         e.target.style.overflowY = newHeight >= maxHeight ? 'auto' : 'hidden';
         
-        if (elements.panel.style.display === 'flex' && elements.panel.adjustPosition) {
+        if (elements.panel.hasAttribute('data-open') && elements.panel.adjustPosition) {
           setTimeout(() => {
             elements.panel.adjustPosition();
           }, 10);
