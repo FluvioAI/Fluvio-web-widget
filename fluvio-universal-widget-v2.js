@@ -336,84 +336,13 @@
         min-height: 0;
       }
 
-      /* ── Mode landing screen ── */
-      #fluvio-mode-landing,
+      /* ── Content containers ── */
       #fluvio-voice-container,
       #fluvio-chat-container {
         display: none;
         flex: 1;
         min-height: 0;
       }
-      #fluvio-mode-landing.active {
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
-        padding: 20px 16px 16px;
-        gap: 10px;
-      }
-      #fluvio-mode-landing h3 {
-        margin: 0 0 2px;
-        font-size: 17px;
-        font-weight: 700;
-        color: #111827;
-        line-height: 1.3;
-      }
-      #fluvio-mode-landing > p {
-        margin: 0 0 6px;
-        font-size: 13px;
-        color: #6B7280;
-        line-height: 1.4;
-      }
-      .fluvio-mode-card {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 15px;
-        border: 1.5px solid #E5E7EB;
-        border-radius: 12px;
-        background: #fff;
-        cursor: pointer;
-        text-align: left;
-        width: 100%;
-        transition: all 0.2s ease;
-        font-family: inherit;
-      }
-      .fluvio-mode-card:hover {
-        border-color: ${config.color};
-        background: ${config.color}08;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      }
-      .fluvio-mode-card-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        background: ${config.color};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        color: #fff;
-      }
-      .fluvio-mode-card-icon svg { width: 20px; height: 20px; }
-      .fluvio-mode-card-body {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-      }
-      .fluvio-mode-card-body strong {
-        font-size: 14px;
-        font-weight: 600;
-        color: #1F2937;
-        line-height: 1.2;
-      }
-      .fluvio-mode-card-body span {
-        font-size: 12px;
-        color: #6B7280;
-        line-height: 1.4;
-      }
-
-      /* ── Voice container ── */
       #fluvio-voice-container.active {
         display: flex;
         flex-direction: column;
@@ -800,40 +729,40 @@
       #fluvio-chat-send:hover:not(:disabled) { background: ${config.color}dd; }
       #fluvio-chat-send:disabled { background: #9CA3AF; cursor: not-allowed; }
 
-      /* ── Bottom pill tabs (outside #fluvio-content) ── */
+      /* ── Top tab bar ── */
       #fluvio-mode-selector {
-        display: none;
+        display: flex;
         background: #fff;
-        border-top: 1px solid #E5E7EB;
-        padding: 10px 12px;
-        gap: 8px;
+        border-bottom: 1px solid #E5E7EB;
+        padding: 0 16px;
+        gap: 0;
         flex-shrink: 0;
       }
       .fluvio-mode-btn {
         flex: 1;
-        padding: 8px 16px;
-        border: 1.5px solid #E5E7EB;
-        border-radius: 999px;
+        padding: 10px 12px 9px;
+        border: none;
+        border-bottom: 2.5px solid transparent;
+        border-radius: 0;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
-        background: #fff;
+        background: transparent;
         color: #6B7280;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
         font-family: inherit;
+        margin-bottom: -1px;
       }
       .fluvio-mode-btn svg { width: 14px; height: 14px; }
       .fluvio-mode-btn.active {
-        background: ${config.color};
-        color: #fff;
-        border-color: ${config.color};
+        color: ${config.color};
+        border-bottom-color: ${config.color};
       }
       .fluvio-mode-btn:hover:not(.active) {
-        border-color: ${config.color};
         color: ${config.color};
       }
 
@@ -923,40 +852,31 @@
     const panel = document.createElement('div');
     panel.id = 'fluvio-panel';
 
-    const showModeSelector = config.mode === 'dual';
-    // In dual mode the landing screen is shown first; individual containers start inactive
-    const voiceInitActive = config.mode === 'voice';
-    const chatInitActive  = config.mode === 'chat';
+    const showVoiceTab = config.mode === 'dual' || config.mode === 'voice';
+    const showChatTab = config.mode === 'dual' || config.mode === 'chat';
+    const showTabs = showVoiceTab && showChatTab; // Only show tab bar when both available
+    const defaultActive = config.mode === 'chat' ? 'chat' : 'voice';
+    const voiceInitActive = defaultActive === 'voice';
+    const chatInitActive  = defaultActive === 'chat';
 
     panel.innerHTML = `
       <div id="fluvio-header">
-        <button id="fluvio-back" aria-label="Back to menu">${createIcon('Menu')}</button>
         <div id="fluvio-header-brand">${esc(config.title)}</div>
         <button id="fluvio-close" aria-label="Close">${createIcon('X')}</button>
       </div>
 
-      <div id="fluvio-content">
-        ${showModeSelector ? `
-        <div id="fluvio-mode-landing" class="active">
-          <h3>How can we help you today?</h3>
-          <p>Choose how you'd like to interact with our assistant.</p>
-          <button class="fluvio-mode-card" data-mode="voice">
-            <div class="fluvio-mode-card-icon">${createIcon('Phone')}</div>
-            <div class="fluvio-mode-card-body">
-              <strong>Voice Assistant</strong>
-              <span>Have a quick conversation and get help instantly.</span>
-            </div>
-          </button>
-          <button class="fluvio-mode-card" data-mode="chat">
-            <div class="fluvio-mode-card-icon">${createIcon('MessageCircle')}</div>
-            <div class="fluvio-mode-card-body">
-              <strong>Chat Assistant</strong>
-              <span>Type your question and we'll guide you through.</span>
-            </div>
-          </button>
-        </div>
-        ` : ''}
+      ${showTabs ? `
+      <div id="fluvio-mode-selector" role="tablist">
+        <button class="fluvio-mode-btn active" data-mode="voice" role="tab" aria-selected="${voiceInitActive}">
+          ${createIcon('Phone')} Voice
+        </button>
+        <button class="fluvio-mode-btn" data-mode="chat" role="tab" aria-selected="${chatInitActive}">
+          ${createIcon('MessageCircle')} Chat
+        </button>
+      </div>
+      ` : ''}
 
+      <div id="fluvio-content">
         <div id="fluvio-voice-container" class="${voiceInitActive ? 'active' : ''}">
           <div id="fluvio-timer" aria-live="off">00:00</div>
           <div id="fluvio-orb-wrapper" aria-hidden="true">
@@ -1001,17 +921,6 @@
           </div>
         </div>
       </div>
-
-      ${showModeSelector ? `
-      <div id="fluvio-mode-selector" role="tablist">
-        <button class="fluvio-mode-btn" data-mode="voice" role="tab" aria-selected="false">
-          ${createIcon('Phone')} Voice
-        </button>
-        <button class="fluvio-mode-btn" data-mode="chat" role="tab" aria-selected="false">
-          ${createIcon('MessageCircle')} Chat
-        </button>
-      </div>
-      ` : ''}
 
       <div id="fluvio-footer">
         <a href="https://fluvio.ai" target="_blank" rel="noopener noreferrer" id="fluvio-branding">Powered by FluvioAI</a>
@@ -1060,8 +969,6 @@
       typingIndicator:document.getElementById('fluvio-typing-indicator'),
       voiceContainer: document.getElementById('fluvio-voice-container'),
       modeSelector:   document.getElementById('fluvio-mode-selector'),
-      modeLanding:    document.getElementById('fluvio-mode-landing'),
-      backBtn:        document.getElementById('fluvio-back'),
       timerEl:        document.getElementById('fluvio-timer'),
     };
   }
@@ -1341,17 +1248,7 @@
     }
 
     function switchView(view) {
-      const landing = elements.modeLanding;
-      const back    = elements.backBtn;
-      if (landing) landing.classList.toggle('active', view === 'landing');
-      if (elements.modeSelector) elements.modeSelector.style.display = view !== 'landing' ? 'flex' : 'none';
-      if (back) back.style.display = (view === 'chat' && config.mode === 'dual') ? 'flex' : 'none';
-      if (view === 'landing') {
-        if (elements.voiceContainer) elements.voiceContainer.classList.remove('active');
-        if (elements.chatContainer)  elements.chatContainer.classList.remove('active');
-      } else {
-        switchMode(view);
-      }
+      switchMode(view);
     }
 
     try {
@@ -1407,11 +1304,7 @@
       void panel.offsetWidth;
       panel.setAttribute('data-open', '');
       elements.fab.setAttribute('aria-expanded', 'true');
-      if (config.mode === 'dual') {
-        switchView('landing');
-      } else {
-        switchMode(config.mode);
-      }
+      switchMode(defaultActive);
       var closeBtn = document.getElementById('fluvio-close');
       if (closeBtn) setTimeout(function () { closeBtn.focus(); }, 50);
     }
@@ -1429,20 +1322,7 @@
       if (e.key === 'Escape' && elements.panel.hasAttribute('data-open')) closePanel();
     });
 
-    // Landing card clicks
-    if (elements.modeLanding) {
-      elements.modeLanding.addEventListener('click', (e) => {
-        const card = e.target.closest('.fluvio-mode-card');
-        if (card) switchView(card.dataset.mode);
-      });
-    }
-
-    // Back button → return to landing
-    if (elements.backBtn) {
-      elements.backBtn.addEventListener('click', () => switchView('landing'));
-    }
-
-    // H5: Throttled resize/scroll with RAF
+    // Mode selector event handlers
     let rafPending = false;
     function throttledAdjust() {
       if (rafPending || !elements.panel.hasAttribute('data-open')) return;
