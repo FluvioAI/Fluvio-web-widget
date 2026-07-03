@@ -746,7 +746,7 @@
         gap: 0;
         flex-shrink: 0;
       }
-      .fluvio-mode-btn {
+      #fluvio-panel .fluvio-mode-btn {
         all: unset;
         box-sizing: border-box;
         flex: 1;
@@ -757,8 +757,8 @@
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
-        background: transparent;
+        transition: color 0.2s ease, border-color 0.2s ease;
+        background: transparent !important;
         color: #6B7280;
         display: flex;
         align-items: center;
@@ -766,16 +766,17 @@
         gap: 6px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         margin-bottom: -1px;
-        line-height: 1;
+        line-height: 1 !important;
         text-align: center;
         white-space: nowrap;
+        box-shadow: none !important;
       }
-      .fluvio-mode-btn svg { width: 14px; height: 14px; }
-      .fluvio-mode-btn.active {
+      #fluvio-panel .fluvio-mode-btn svg { width: 14px; height: 14px; }
+      #fluvio-panel .fluvio-mode-btn.active {
         color: ${config.color};
         border-bottom-color: ${config.color};
       }
-      .fluvio-mode-btn:hover:not(.active) {
+      #fluvio-panel .fluvio-mode-btn:hover:not(.active) {
         color: ${config.color};
       }
 
