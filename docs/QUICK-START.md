@@ -81,10 +81,13 @@ Add any of the following options to personalize the widget:
 | `data-title` | Title shown in the widget header | `AI Assistant` |
 | `data-subtitle` | Subtitle shown below the title | `Voice & Chat Support` |
 | `data-position` | Corner where the widget appears | `bottom-right` |
+| `data-fab-text` | Text on the floating button | `Chat or Talk to...` |
+| `data-fab-style` | Button shape: `pill` or `circle` | `pill` |
 | `data-agent-name` | Name of your AI agent | — |
 | `data-company-name` | Your company name | — |
 | `data-mode` | `dual`, `voice`, or `chat` | `dual` |
 | `data-default-mode` | Which tab opens first: `voice` or `chat` | `voice` |
+| `data-demo` | Set to `"true"` to test without a real webhook | `false` |
 
 ### Position Options
 

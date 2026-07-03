@@ -37,6 +37,8 @@ All widget options are set directly in the script tag using `data-` attributes. 
 | `data-title` | No | `AI Assistant` | Title shown in the widget header |
 | `data-subtitle` | No | `Voice & Chat Support` | Subtitle shown below the title |
 | `data-fab-text` | No | `Chat or Talk to...` | Text shown on the floating button |
+| `data-fab-style` | No | `pill` | Button shape: `pill` (text + orb) or `circle` (icon only) |
+| `data-demo` | No | `false` | Set to `"true"` to test the widget without a real webhook — shows "Demo Mode" and skips all network calls |
 | `data-agent-name` | No | `AI` | Name of your AI agent |
 | `data-company-name` | No | — | Your company name |
 | `data-company-hours` | No | — | Business hours, shown to the visitor |
