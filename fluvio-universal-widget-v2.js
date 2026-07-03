@@ -1,5 +1,5 @@
 /**
- * Fluvio Universal Voice Widget
+ * Fluvio Universal Voice & Chat Widget
  * Deploy to any website with a single script tag
  * 
  * Usage:
