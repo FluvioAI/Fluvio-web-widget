@@ -333,7 +333,7 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        min-height: 0;
+        min-height: 380px;
       }
 
       /* ── Content containers ── */
