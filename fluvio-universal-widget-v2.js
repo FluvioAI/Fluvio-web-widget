@@ -293,6 +293,8 @@
         letter-spacing: -0.01em;
       }
       #fluvio-back {
+        all: unset;
+        box-sizing: border-box;
         background: none;
         border: none;
         color: #6B7280;
@@ -310,6 +312,8 @@
       #fluvio-back:hover { background: #F3F4F6; }
       #fluvio-back svg { width: 18px; height: 18px; }
       #fluvio-close {
+        all: unset;
+        box-sizing: border-box;
         background: none;
         border: none;
         color: #6B7280;
@@ -399,6 +403,8 @@
       #fluvio-status.online    { color: #10B981; }
 
       #fluvio-call-button {
+        all: unset;
+        box-sizing: border-box;
         width: 100%;
         padding: 14px 24px;
         border: none;
@@ -411,7 +417,7 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        font-family: inherit;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
       #fluvio-call-button svg { width: 18px; height: 18px; }
       #fluvio-call-button.start {
@@ -711,6 +717,8 @@
         box-shadow: 0 0 0 3px ${config.color}20;
       }
       #fluvio-chat-send {
+        all: unset;
+        box-sizing: border-box;
         padding: 10px 14px;
         background: ${config.color};
         color: #fff;
@@ -739,6 +747,8 @@
         flex-shrink: 0;
       }
       .fluvio-mode-btn {
+        all: unset;
+        box-sizing: border-box;
         flex: 1;
         padding: 10px 12px 9px;
         border: none;
@@ -754,8 +764,11 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        font-family: inherit;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         margin-bottom: -1px;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
       }
       .fluvio-mode-btn svg { width: 14px; height: 14px; }
       .fluvio-mode-btn.active {
