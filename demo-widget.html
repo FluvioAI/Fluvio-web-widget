@@ -1,1 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>FluvioAI Widget Demo</title>
 
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #eaf7ff, #dfffea);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .demo-card {
+      background: white;
+      border-radius: 18px;
+      padding: 32px;
+      max-width: 560px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+      text-align: center;
+    }
+
+    .demo-card h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+
+    .demo-card p {
+      font-size: 16px;
+      line-height: 1.5;
+      color: #444;
+    }
+
+    .warning {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #fff4e5;
+      color: #7a4a00;
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="demo-card">
+    <h1 id="demoTitle">Try the FluvioAI Web Widget</h1>
+    <p id="demoText">
+      Click the floating assistant button in the bottom-right corner to test the voice and chat experience.
+    </p>
+    <div id="warning" class="warning"></div>
+  </div>
+
+  <script>
+    function getParam(name, fallback = "") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || fallback;
+    }
+
+    const webhook = getParam("webhook");
+    const projectId = getParam("project_id");
+
+    const mode = getParam("mode", "dual");
+    const defaultMode = getParam("default_mode", "voice");
+    const color = getParam("color", "#FF4800");
+    const position = getParam("position", "bottom-right");
+    const title = getParam("title", "AI Assistant");
+    const subtitle = getParam("subtitle", "Voice & Chat Support");
+    const fabText = getParam("fab_text", "Talk to AI");
+    const fabStyle = getParam("fab_style", "pill");
+    const agentName = getParam("agent_name", "Alex");
+    const companyName = getParam("company_name", "FluvioAI");
+    const greeting = getParam(
+      "greeting",
+      "Hi! I'm " + agentName + ", your AI assistant. How can I help you today?"
+    );
+    const demo = getParam("demo", "true");
+
+    document.getElementById("demoTitle").textContent =
+      "Try the " + companyName + " AI Assistant";
+
+    document.getElementById("demoText").textContent =
+      "Click the floating button to test " + agentName + ", the AI assistant for " + companyName + ".";
+
+    if (!webhook || !projectId) {
+      const warning = document.getElementById("warning");
+      warning.style.display = "block";
+      warning.textContent = "Missing required widget settings: webhook and/or project_id.";
+    } else {
+      const script = document.createElement("script");
+
+      script.src = "https://fluvioai.github.io/Fluvio-web-widget/fluvio-universal-widget-v2.js";
+
+      script.setAttribute("data-webhook", webhook);
+      script.setAttribute("data-project-id", projectId);
+      script.setAttribute("data-mode", mode);
+      script.setAttribute("data-default-mode", defaultMode);
+      script.setAttribute("data-color", color);
+      script.setAttribute("data-position", position);
+      script.setAttribute("data-title", title);
+      script.setAttribute("data-subtitle", subtitle);
+      script.setAttribute("data-fab-text", fabText);
+      script.setAttribute("data-fab-style", fabStyle);
+      script.setAttribute("data-agent-name", agentName);
+      script.setAttribute("data-company-name", companyName);
+      script.setAttribute("data-greeting", greeting);
+      script.setAttribute("data-demo", demo);
+
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>
