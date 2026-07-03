@@ -699,17 +699,24 @@
         background: #fff;
       }
       #fluvio-chat-input {
+        all: unset;
+        box-sizing: border-box;
+        display: block;
         flex: 1;
         padding: 10px 14px;
         border: 1px solid #D1D5DB;
         border-radius: 8px;
-        font-size: 14px;
-        resize: none;
-        min-height: 42px;
-        max-height: 120px;
-        font-family: inherit;
-        box-sizing: border-box;
+        font-size: 14px !important;
+        resize: none !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 120px !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: #111827;
+        background: #fff !important;
         overflow-y: hidden;
+        line-height: 1.4 !important;
+        width: 100%;
       }
       #fluvio-chat-input:focus {
         outline: none;
