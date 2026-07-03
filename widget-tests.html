@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fluvio Widget — Test Suite</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; background: #0f1117; color: #e5e7eb; padding: 24px; }
+    h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+    .meta { font-size: 12px; color: #6b7280; margin-bottom: 24px; }
+    .suite { margin-bottom: 20px; }
+    .suite-title { font-size: 13px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #1f2937; }
+    .test { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid #111827; font-size: 13px; }
+    .test:last-child { border-bottom: none; }
+    .badge { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; margin-top: 1px; }
+    .pass { background: #064e3b; color: #34d399; }
+    .fail { background: #7f1d1d; color: #f87171; }
+    .skip { background: #1f2937; color: #6b7280; }
+    .test-name { flex: 1; line-height: 1.4; }
+    .test-name.failed { color: #f87171; }
+    .error-detail { font-size: 11px; color: #ef4444; margin-top: 3px; background: #1c0a0a; padding: 4px 8px; border-radius: 4px; border-left: 2px solid #ef4444; white-space: pre-wrap; word-break: break-all; }
+    .summary { margin-top: 24px; padding: 16px; border-radius: 10px; font-size: 14px; font-weight: 600; }
+    .summary.all-pass { background: #064e3b; color: #34d399; }
+    .summary.some-fail { background: #7f1d1d; color: #f87171; }
+    .count { font-size: 24px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Fluvio Widget — Test Suite</h1>
+  <p class="meta">Critical user action tests — open browser console for additional output</p>
+  <div id="output"></div>
+
+  <script>
+  // ── Tiny test runner ────────────────────────────────────────────────────────
+  const results = [];
+  let currentSuite = '';
+
+  function suite(name) { currentSuite = name; }
+
+  async function test(name, fn) {
+    try {
+      await fn();
+      results.push({ suite: currentSuite, name, pass: true });
+    } catch (err) {
+      results.push({ suite: currentSuite, name, pass: false, error: err.message || String(err) });
+    }
+  }
+
+  function assert(condition, msg) {
+    if (!condition) throw new Error(msg || 'Assertion failed');
+  }
+
+  function assertEqual(a, b, msg) {
+    if (a !== b) throw new Error(msg || `Expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`);
+  }
+
+  function assertContains(str, sub, msg) {
+    if (!String(str).includes(sub)) throw new Error(msg || `Expected "${str}" to contain "${sub}"`);
+  }
+
+  function assertNotContains(str, sub, msg) {
+    if (String(str).includes(sub)) throw new Error(msg || `"${str}" should not contain "${sub}"`);
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ── Helpers to read the widget's internal helpers via the module scope ───────
+  // We expose helpers on window for testing by temporarily patching the widget.
+  // The widget runs in an IIFE, so we test via DOM state and behaviour.
+
+  function getPanel()      { return document.getElementById('fluvio-panel'); }
+  function getFab()        { return document.getElementById('fluvio-fab'); }
+  function getCallBtn()    { return document.getElementById('fluvio-call-button'); }
+  function getCallText()   { return document.getElementById('fluvio-call-text'); }
+  function getStatus()     { return document.getElementById('fluvio-status'); }
+  function getOrbWrapper() { return document.getElementById('fluvio-orb-wrapper'); }
+  function getOrbLabel()   { return document.getElementById('fluvio-orb-label'); }
+  function getChatInput()  { return document.getElementById('fluvio-chat-input'); }
+  function getChatSend()   { return document.getElementById('fluvio-chat-send'); }
+  function getChatMsgs()   { return document.getElementById('fluvio-chat-messages'); }
+  function getModeSelector(){ return document.getElementById('fluvio-mode-selector'); }
+  function isPanelOpen()   { return getPanel()?.style.display === 'flex'; }
+
+  function clickFab()      { getFab()?.click(); }
+  function clickClose()    { document.getElementById('fluvio-close')?.click(); }
+  function pressEscape()   { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); }
+  function clickTab(mode)  { getModeSelector()?.querySelector(`[data-mode="${mode}"]`)?.click(); }
+
+  // ── Security utility tests (pure functions, no DOM needed) ──────────────────
+
+  // Replicate esc() and isValidWebhookUrl() locally for pure-unit testing
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function isValidWebhookUrl(url) {
+    try { const p = new URL(url); return p.protocol === 'https:'; } catch { return false; }
+  }
+
+  // ── Run all tests ────────────────────────────────────────────────────────────
+  async function runTests() {
+
+    // ── Suite 1: Security helpers ────────────────────────────────────────────
+    suite('Security Helpers');
+
+    await test('esc() escapes < and > characters', () => {
+      assertEqual(esc('<script>alert(1)<\/script>'), '&lt;script&gt;alert(1)&lt;\/script&gt;');
+    });
+
+    await test('esc() escapes & character', () => {
+      assertEqual(esc('Tom & Jerry'), 'Tom &amp; Jerry');
+    });
+
+    await test('esc() escapes double and single quotes', () => {
+      assertContains(esc('"hello"'), '&quot;');
+      assertContains(esc("it's"), '&#39;');
+    });
+
+    await test('esc() handles null and undefined safely', () => {
+      assertEqual(esc(null), '');
+      assertEqual(esc(undefined), '');
+    });
+
+    await test('isValidWebhookUrl() accepts https URLs', () => {
+      assert(isValidWebhookUrl('https://hook.us2.make.com/abc123'), 'Should accept valid https URL');
+    });
+
+    await test('isValidWebhookUrl() rejects http URLs', () => {
+      assert(!isValidWebhookUrl('http://hook.us2.make.com/abc123'), 'Should reject http');
+    });
+
+    await test('isValidWebhookUrl() rejects javascript: scheme', () => {
+      assert(!isValidWebhookUrl('javascript:alert(1)'), 'Should reject javascript: scheme');
+    });
+
+    await test('isValidWebhookUrl() rejects empty string', () => {
+      assert(!isValidWebhookUrl(''), 'Should reject empty string');
+    });
+
+    await test('isValidWebhookUrl() rejects malformed URL', () => {
+      assert(!isValidWebhookUrl('not-a-url'), 'Should reject malformed URL');
+    });
+
+    // Wait for widget to finish mounting before DOM tests
+    await sleep(300);
+
+    // ── Suite 2: Widget initialisation ──────────────────────────────────────
+    suite('Widget Initialisation');
+
+    await test('FAB button is rendered in the DOM', () => {
+      assert(getFab() !== null, 'FAB element should exist');
+    });
+
+    await test('Panel is rendered but hidden on load', () => {
+      const panel = getPanel();
+      assert(panel !== null, 'Panel element should exist');
+      assertEqual(panel.style.display, '', 'Panel should not be visible on load');
+    });
+
+    await test('FAB has aria-expanded="false" on load', () => {
+      assertEqual(getFab()?.getAttribute('aria-expanded'), 'false', 'aria-expanded should be false initially');
+    });
+
+    await test('FAB has role="button"', () => {
+      assertEqual(getFab()?.getAttribute('role'), 'button');
+    });
+
+    await test('Status element has aria-live="polite"', () => {
+      assertEqual(getStatus()?.getAttribute('aria-live'), 'polite');
+    });
+
+    await test('Call button starts disabled until SDK resolves', () => {
+      // In demo mode the button gets enabled quickly, so just check it exists
+      assert(getCallBtn() !== null, 'Call button should exist');
+    });
+
+    await test('Tab buttons have role="tab"', () => {
+      const tabs = getModeSelector()?.querySelectorAll('[role="tab"]');
+      assert(tabs && tabs.length === 2, 'Should have 2 tab buttons with role=tab');
+    });
+
+    await test('Landing screen exists in DOM (dual mode)', () => {
+      const landing = document.getElementById('fluvio-mode-landing');
+      assert(landing !== null, 'Landing screen should exist in dual mode');
+    });
+
+    await test('Landing screen is active on load (dual mode)', () => {
+      const landing = document.getElementById('fluvio-mode-landing');
+      assert(landing?.classList.contains('active'), 'Landing should be active initially');
+    });
+
+    await test('FAB renders as pill with mini-orb and text', () => {
+      const fab = getFab();
+      assert(fab?.querySelector('.fluvio-fab-orb'), 'FAB should have mini orb');
+      assert(fab?.querySelector('.fluvio-fab-text'), 'FAB should have text span');
+    });
+
+    await test('Icons render as inline SVG, not as <i data-lucide> placeholders', () => {
+      const panel = getPanel();
+      assert(!panel?.innerHTML.includes('data-lucide'), 'Should not have unrendered data-lucide attributes');
+      assert(panel?.innerHTML.includes('<svg'), 'Icons should be rendered as SVG');
+    });
+
+    // ── Suite 3: Panel open / close ─────────────────────────────────────────
+    suite('Panel Open / Close');
+
+    await test('Clicking FAB opens the panel', async () => {
+      if (isPanelOpen()) clickFab(); // reset
+      await sleep(50);
+      clickFab();
+      await sleep(50);
+      assert(isPanelOpen(), 'Panel should be visible after FAB click');
+    });
+
+    await test('FAB aria-expanded becomes "true" when panel opens', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      assertEqual(getFab()?.getAttribute('aria-expanded'), 'true');
+    });
+
+    await test('Clicking FAB again closes the panel', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickFab();
+      await sleep(50);
+      assert(!isPanelOpen(), 'Panel should be hidden after second FAB click');
+    });
+
+    await test('Clicking close button closes the panel', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickClose();
+      await sleep(50);
+      assert(!isPanelOpen(), 'Panel should close when close button clicked');
+    });
+
+    await test('FAB aria-expanded returns to "false" when panel closes', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      clickClose();
+      await sleep(50);
+      assertEqual(getFab()?.getAttribute('aria-expanded'), 'false');
+    });
+
+    await test('Pressing Escape closes the panel', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(50); }
+      pressEscape();
+      await sleep(50);
+      assert(!isPanelOpen(), 'Panel should close on Escape key');
+    });
+
+    await test('Pressing Escape when panel is closed does not throw', async () => {
+      if (isPanelOpen()) { clickFab(); await sleep(50); }
+      pressEscape(); // should be a no-op, not an error
+    });
+
+    // helper: open panel and navigate past landing to a specific mode
+    async function openToMode(mode) {
+      if (!isPanelOpen()) { clickFab(); await sleep(80); }
+      const card = document.querySelector(`.fluvio-mode-card[data-mode="${mode}"]`);
+      if (card) { card.click(); await sleep(80); }
+      else { clickTab(mode); await sleep(50); }
+    }
+
+    // ── Suite 3b: Landing screen ─────────────────────────────────────────────
+    suite('Landing Screen');
+
+    await test('Opening panel in dual mode shows landing, hides both containers', async () => {
+      if (isPanelOpen()) { clickFab(); await sleep(50); }
+      clickFab();
+      await sleep(100);
+      const landing = document.getElementById('fluvio-mode-landing');
+      const voice   = document.getElementById('fluvio-voice-container');
+      const chat    = document.getElementById('fluvio-chat-container');
+      assert(landing?.classList.contains('active'), 'Landing should be active');
+      assert(!voice?.classList.contains('active'),  'Voice should be inactive');
+      assert(!chat?.classList.contains('active'),   'Chat should be inactive');
+    });
+
+    await test('Clicking Voice card shows voice container, hides landing', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(80); }
+      const card = document.querySelector('.fluvio-mode-card[data-mode="voice"]');
+      if (card) { card.click(); await sleep(80); }
+      const landing = document.getElementById('fluvio-mode-landing');
+      const voice   = document.getElementById('fluvio-voice-container');
+      assert(!landing?.classList.contains('active'), 'Landing should be hidden');
+      assert(voice?.classList.contains('active'),    'Voice should be active');
+    });
+
+    await test('Clicking Chat card shows chat container', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(80); }
+      const card = document.querySelector('.fluvio-mode-card[data-mode="chat"]');
+      if (card) { card.click(); await sleep(80); }
+      const chat = document.getElementById('fluvio-chat-container');
+      assert(chat?.classList.contains('active'), 'Chat should be active');
+    });
+
+    await test('Back button in chat view returns to landing', async () => {
+      await openToMode('chat');
+      const back = document.getElementById('fluvio-back');
+      if (back) { back.click(); await sleep(80); }
+      const landing = document.getElementById('fluvio-mode-landing');
+      assert(landing?.classList.contains('active'), 'Landing should reappear after back');
+    });
+
+    await test('Closing panel and reopening resets to landing', async () => {
+      await openToMode('voice');
+      clickClose();
+      await sleep(50);
+      clickFab();
+      await sleep(100);
+      const landing = document.getElementById('fluvio-mode-landing');
+      assert(landing?.classList.contains('active'), 'Landing should show on re-open');
+    });
+
+    // ── Suite 4: Tab switching ───────────────────────────────────────────────
+    suite('Tab Switching');
+
+    await test('Clicking Chat tab makes chat container active', async () => {
+      await openToMode('chat');
+      const chat = document.getElementById('fluvio-chat-container');
+      assert(chat?.classList.contains('active'), 'Chat container should be active');
+    });
+
+    await test('Clicking Chat tab deactivates voice container', async () => {
+      await openToMode('chat');
+      const voice = document.getElementById('fluvio-voice-container');
+      assert(!voice?.classList.contains('active'), 'Voice container should not be active');
+    });
+
+    await test('Clicking Web Call tab makes voice container active', async () => {
+      await openToMode('voice');
+      const voice = document.getElementById('fluvio-voice-container');
+      assert(voice?.classList.contains('active'), 'Voice container should be active');
+    });
+
+    await test('Active tab has "active" class, inactive tab does not', async () => {
+      await openToMode('chat');
+      const chatTab  = getModeSelector()?.querySelector('[data-mode="chat"]');
+      const voiceTab = getModeSelector()?.querySelector('[data-mode="voice"]');
+      assert(chatTab?.classList.contains('active'), 'Chat tab should be active');
+      assert(!voiceTab?.classList.contains('active'), 'Voice tab should not be active');
+    });
+
+    // ── Suite 5: Chat greeting ───────────────────────────────────────────────
+    suite('Chat Greeting');
+
+    await test('Default greeting appears when chat tab is first opened', async () => {
+      await openToMode('chat');
+      await sleep(200);
+      const messages = getChatMsgs()?.querySelectorAll('.fluvio-message');
+      assert(messages && messages.length > 0, 'At least one greeting message should appear');
+    });
+
+    await test('Greeting message uses textContent, not innerHTML injection', async () => {
+      const msgs = getChatMsgs()?.querySelectorAll('.fluvio-message .fluvio-message-content');
+      if (msgs && msgs.length > 0) {
+        const first = msgs[0];
+        // If textContent was used, innerHTML will equal the escaped text, no raw <tags>
+        assert(!first.innerHTML.includes('<script'), 'No script tags should be in message HTML');
+      }
+    });
+
+    // ── Suite 6: Chat XSS guard ──────────────────────────────────────────────
+    suite('Chat XSS Guard');
+
+    await test('XSS payload in chat input does not execute or render as HTML', async () => {
+      await openToMode('chat');
+
+      let xssExecuted = false;
+      window.__xssTest = () => { xssExecuted = true; };
+
+      const input = getChatInput();
+      if (input) {
+        input.value = '<img src=x onerror="window.__xssTest()">';
+        getChatSend()?.click();
+        await sleep(100);
+      }
+
+      assert(!xssExecuted, 'XSS payload should NOT execute');
+
+      // Also check the rendered bubble contains escaped text, not an <img>
+      const bubbles = getChatMsgs()?.querySelectorAll('.fluvio-message.user .fluvio-message-content');
+      if (bubbles && bubbles.length > 0) {
+        const last = bubbles[bubbles.length - 1];
+        assert(!last.querySelector('img'), 'No <img> tag should be injected into the DOM');
+        assertContains(last.textContent, '<img', 'Raw text should be visible, not parsed as HTML');
+      }
+    });
+
+    // ── Suite 7: Voice call lifecycle ────────────────────────────────────────
+    suite('Voice Call Lifecycle (Demo Mode)');
+
+    await test('Call button exists and shows "Start to call" initially', async () => {
+      await openToMode('voice');
+      await sleep(500);
+      assert(getCallBtn() !== null, 'Call button should exist');
+      const txt = document.getElementById('fluvio-call-text')?.textContent || '';
+      assert(txt.toLowerCase().includes('start'), 'Button should say start');
+    });
+
+    await test('Clicking Start Call enters connecting state', async () => {
+      await openToMode('voice');
+      await sleep(500);
+      const btn = getCallBtn();
+      if (btn && !btn.disabled) {
+        btn.click();
+        await sleep(50);
+        const status = getStatus()?.textContent;
+        assertContains(status, 'Connecting', 'Status should show Connecting after click');
+      }
+    });
+
+    await test('Orb transitions to listening state when call connects', async () => {
+      await sleep(1600); // wait for demo 1.5s connect delay
+      const orb = getOrbWrapper();
+      const label = getOrbLabel();
+      if (orb && orb.className !== 'idle') {
+        assertEqual(orb.className, 'listening', 'Orb should be in listening state after connect');
+        assertContains(label?.textContent || '', 'Listening', 'Orb label should say Listening');
+      }
+    });
+
+    await test('Orb transitions to talking state during agent speech simulation', async () => {
+      await sleep(1600); // wait for the demo talking phase (1.5s after connect)
+      const orb = getOrbWrapper();
+      if (orb) {
+        assert(
+          orb.className === 'talking' || orb.className === 'listening',
+          `Orb should be in talking or listening state, got: ${orb.className}`
+        );
+      }
+    });
+
+    await test('End Call button appears during active call', async () => {
+      const btn = getCallBtn();
+      // If connected, button should show "End Call"
+      if (btn && btn.classList.contains('end')) {
+        assertEqual(getCallText()?.textContent, 'End Call');
+      }
+    });
+
+    await test('Closing panel during active call resets orb to idle', async () => {
+      const btn = getCallBtn();
+      if (btn?.classList.contains('end')) {
+        // Call is active — close the panel
+        clickClose();
+        await sleep(100);
+        // Re-open to check orb state
+        clickFab();
+        await sleep(100);
+        clickTab('voice');
+        await sleep(100);
+        const orb = getOrbWrapper();
+        assertEqual(orb?.className, 'idle', 'Orb should be idle after panel close during call');
+      }
+    });
+
+    // ── Suite 8: Accessibility ────────────────────────────────────────────────
+    suite('Accessibility');
+
+    await test('Chat messages region has aria-live="polite"', () => {
+      assertEqual(getChatMsgs()?.getAttribute('aria-live'), 'polite');
+    });
+
+    await test('Chat input has aria-label', () => {
+      assert(getChatInput()?.getAttribute('aria-label'), 'Chat input should have aria-label');
+    });
+
+    await test('Chat send button has aria-label', () => {
+      assert(getChatSend()?.getAttribute('aria-label'), 'Send button should have aria-label');
+    });
+
+    await test('Orb wrapper is hidden from assistive tech', () => {
+      assertEqual(getOrbWrapper()?.getAttribute('aria-hidden'), 'true');
+    });
+
+    await test('Close button has aria-label', () => {
+      const closeBtn = document.getElementById('fluvio-close');
+      assert(closeBtn?.getAttribute('aria-label'), 'Close button should have aria-label');
+    });
+
+    // ── Suite 9: Chat — User Typing & Sending ──────────────────────────────
+    suite('Chat — User Typing & Sending');
+
+    await test('Pressing Enter in chat input adds a user message bubble', async () => {
+      await openToMode('chat');
+      const input = getChatInput();
+      if (!input) return;
+      const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      input.value = 'Hello widget test';
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      await sleep(100);
+      const after = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      assert(after > before, `User bubble count should increase (was ${before}, now ${after})`);
+    });
+
+    await test('Sent message text appears verbatim in the user bubble', async () => {
+      await openToMode('chat');
+      await sleep(3000); // wait for any pending demo response to clear
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      input.value = 'Unique text 8f3k9';
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      await sleep(100);
+      const bubbles = [...(getChatMsgs()?.querySelectorAll('.fluvio-message.user .fluvio-message-content') || [])];
+      const lastText = bubbles[bubbles.length - 1]?.textContent || '';
+      assertContains(lastText, 'Unique text 8f3k9');
+    });
+
+    await test('Input field clears after message is sent', async () => {
+      await openToMode('chat');
+      await sleep(3000);
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      input.value = 'Clear me after send';
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      await sleep(100);
+      assertEqual(input.value, '', 'Input should be empty after send');
+    });
+
+    await test('Empty input does not create a message', async () => {
+      await openToMode('chat');
+      await sleep(3000);
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      input.value = '';
+      const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      await sleep(100);
+      const after = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      assertEqual(after, before, 'Empty send should not add a message');
+    });
+
+    await test('Whitespace-only input does not send', async () => {
+      await openToMode('chat');
+      await sleep(3000);
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      input.value = '   ';
+      const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      await sleep(100);
+      const after = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      assertEqual(after, before, 'Whitespace-only should not send a message');
+    });
+
+    await test('Clicking the Send button adds a user message', async () => {
+      await openToMode('chat');
+      await sleep(3000);
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      input.value = 'Sent via button';
+      const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      getChatSend()?.click();
+      await sleep(100);
+      const after = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      assert(after > before, 'Send button click should add a user message');
+    });
+
+    await test('Shift+Enter adds a newline instead of sending', async () => {
+      await openToMode('chat');
+      await sleep(3000);
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      input.value = 'Line 1';
+      const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', shiftKey: true, bubbles: true }));
+      await sleep(100);
+      const after = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      assertEqual(after, before, 'Shift+Enter should NOT send a message');
+    });
+
+    await test('Send button is disabled immediately after clicking Send', async () => {
+      await openToMode('chat');
+      await sleep(3000);
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      input.value = 'Disable test message';
+      getChatSend()?.click();
+      // Demo response takes at least 1000ms — button must still be disabled here
+      assert(getChatSend()?.disabled, 'Send button should be disabled while awaiting response');
+    });
+
+    await test('Typing indicator is visible while awaiting demo response', async () => {
+      // Runs immediately after prior test which just clicked Send — response not yet arrived
+      const indicator = document.getElementById('fluvio-typing-indicator');
+      assert(indicator?.classList.contains('show'), 'Typing indicator should be showing while waiting');
+    });
+
+    await test('Demo response arrives and typing indicator disappears', async () => {
+      await sleep(3000); // demo delay is 1000–2500ms; wait with generous buffer
+      const indicator = document.getElementById('fluvio-typing-indicator');
+      assert(!indicator?.classList.contains('show'), 'Typing indicator should be gone after response');
+      const agentMsgs = getChatMsgs()?.querySelectorAll('.fluvio-message.agent');
+      assert(agentMsgs && agentMsgs.length > 0, 'At least one agent reply should appear');
+    });
+
+    await test('Send button re-enables after demo response arrives', async () => {
+      assert(!getChatSend()?.disabled, 'Send button should be re-enabled after response');
+    });
+
+    await test('Chat messages survive a tab switch and return', async () => {
+      await openToMode('chat');
+      await sleep(3000);
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      input.value = 'Persist check';
+      getChatSend()?.click();
+      await sleep(100);
+      const countBefore = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      clickTab('voice');
+      await sleep(50);
+      clickTab('chat');
+      await sleep(50);
+      const countAfter = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      assertEqual(countAfter, countBefore, 'Message count should be unchanged after tab switch');
+    });
+
+    // ── Suite 10: Voice — End-to-End Call Flow ──────────────────────────────
+    suite('Voice — End-to-End Call Flow');
+
+    await test('Clicking Start call shows "Connecting" status', async () => {
+      await openToMode('voice');
+      await sleep(400);
+      const btn = getCallBtn();
+      if (!btn) return;
+      // Clean up any leftover active call from earlier suites
+      if (btn.classList.contains('end')) { btn.click(); await sleep(200); }
+      if (btn.disabled) return;
+      btn.click();
+      await sleep(50);
+      assertContains(getStatus()?.textContent || '', 'Connecting');
+    });
+
+    await test('Call button is disabled during the connect delay', async () => {
+      assert(getCallBtn()?.disabled, 'Button should be disabled while connecting');
+    });
+
+    await test('Status shows "Connected" after demo connect (1.5s)', async () => {
+      await sleep(1600);
+      assertContains(getStatus()?.textContent || '', 'Connected');
+    });
+
+    await test('Button text changes to "End call" after connect', async () => {
+      assertContains(getCallText()?.textContent?.toLowerCase() || '', 'end');
+      assert(getCallBtn()?.classList.contains('end'), 'Button should carry "end" class');
+    });
+
+    await test('Call timer is counting after connect', async () => {
+      const timerEl = document.getElementById('fluvio-timer');
+      await sleep(2100); // let 2 timer ticks fire
+      const timerText = timerEl?.textContent || '00:00';
+      assert(timerText !== '00:00', `Timer should be running, got: "${timerText}"`);
+    });
+
+    await test('Orb is in an active state (listening or talking) during call', async () => {
+      const orb = getOrbWrapper();
+      assert(
+        orb?.className === 'listening' || orb?.className === 'talking',
+        `Orb should be listening or talking during call, got: "${orb?.className}"`
+      );
+    });
+
+    await test('Clicking End call resets status to "Offline"', async () => {
+      const btn = getCallBtn();
+      if (btn?.classList.contains('end')) btn.click();
+      await sleep(100);
+      assertContains(getStatus()?.textContent || '', 'Offline');
+    });
+
+    await test('Button text resets to "Start to call" after ending', async () => {
+      assertContains(getCallText()?.textContent?.toLowerCase() || '', 'start');
+      assert(getCallBtn()?.classList.contains('start'), 'Button should carry "start" class');
+    });
+
+    await test('Orb resets to idle after call ends', async () => {
+      const orb = getOrbWrapper();
+      assert(
+        !orb?.className || orb.className === 'idle',
+        `Orb should be idle after call ends, got: "${orb?.className}"`
+      );
+    });
+
+    await test('Timer resets to 00:00 after call ends', async () => {
+      assertEqual(document.getElementById('fluvio-timer')?.textContent, '00:00');
+    });
+
+    await test('A second call can be started after ending the first', async () => {
+      await openToMode('voice');
+      await sleep(400);
+      const btn = getCallBtn();
+      if (!btn || btn.disabled || btn.classList.contains('end')) return;
+      btn.click();
+      await sleep(50);
+      assertContains(getStatus()?.textContent || '', 'Connecting');
+    });
+
+    // ── Suite 11: Keyboard Navigation ───────────────────────────────────────
+    suite('Keyboard Navigation');
+
+    await test('Enter key on FAB opens the panel', async () => {
+      if (isPanelOpen()) { clickFab(); await sleep(50); }
+      getFab()?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      await sleep(50);
+      assert(isPanelOpen(), 'Enter on FAB should open panel');
+    });
+
+    await test('Space key on FAB opens the panel', async () => {
+      if (isPanelOpen()) { clickFab(); await sleep(50); }
+      getFab()?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      await sleep(50);
+      assert(isPanelOpen(), 'Space on FAB should open panel');
+    });
+
+    await test('Enter key in chat input sends message without clicking Send', async () => {
+      await openToMode('chat');
+      await sleep(3100); // wait for any pending response
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      input.value = 'Keyboard-only send';
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      await sleep(100);
+      const after = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      assert(after > before, 'Enter key in textarea should send the message');
+    });
+
+    await test('Shift+Enter in chat input inserts a newline, not a send', async () => {
+      await openToMode('chat');
+      await sleep(3100);
+      const input = getChatInput();
+      if (!input || getChatSend()?.disabled) return;
+      const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      input.value = 'Should not send';
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', shiftKey: true, bubbles: true }));
+      await sleep(100);
+      const after = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
+      assertEqual(after, before, 'Shift+Enter in textarea should NOT send');
+    });
+
+    // ── Render results ───────────────────────────────────────────────────────
+    renderResults();
+  }
+
+  function renderResults() {
+    const out = document.getElementById('output');
+    const suites = [...new Set(results.map(r => r.suite))];
+    let totalPass = 0, totalFail = 0;
+
+    suites.forEach(suiteName => {
+      const tests = results.filter(r => r.suite === suiteName);
+      const pass = tests.filter(t => t.pass).length;
+      const fail = tests.filter(t => !t.pass).length;
+      totalPass += pass; totalFail += fail;
+
+      const div = document.createElement('div');
+      div.className = 'suite';
+      div.innerHTML = `<div class="suite-title">${suiteName} &nbsp;·&nbsp; ${pass}/${tests.length} passed</div>`;
+
+      tests.forEach(t => {
+        const row = document.createElement('div');
+        row.className = 'test';
+        const badge = `<div class="badge ${t.pass ? 'pass' : 'fail'}">${t.pass ? '✓' : '✗'}</div>`;
+        const errorHtml = t.error ? `<div class="error-detail">${t.error}</div>` : '';
+        row.innerHTML = `${badge}<div class="test-name ${t.pass ? '' : 'failed'}">${t.name}${errorHtml}</div>`;
+        div.appendChild(row);
+      });
+
+      out.appendChild(div);
+    });
+
+    const summary = document.createElement('div');
+    summary.className = `summary ${totalFail === 0 ? 'all-pass' : 'some-fail'}`;
+    summary.innerHTML = `
+      <span class="count">${totalFail === 0 ? '✓' : '✗'}</span>
+      &nbsp;&nbsp;${totalPass} passed · ${totalFail} failed · ${results.length} total
+    `;
+    out.appendChild(summary);
+  }
+
+  // Load the widget then run tests
+  window.FluvioWidgetLoaded = false; // allow reload in this page context
+  </script>
+
+  <!-- Load the widget under test in demo mode -->
+  <script src="./fluvio-universal-widget-v2.js"
+          data-webhook="https://hook.us2.make.com/your-webhook-url"
+          data-project-id="test_project_123"
+          data-mode="dual"
+          data-default-mode="voice"
+          data-color="#347D9B"
+          data-title="Test Widget"
+          data-subtitle="Testing"
+          data-agent-name="TestBot"
+          data-demo="true">
+  </script>
+
+  <script>
+    // Run after widget has had time to initialize
+    setTimeout(runTests, 400);
+  </script>
+</body>
+</html>

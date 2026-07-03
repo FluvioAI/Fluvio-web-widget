@@ -42,7 +42,8 @@ A repository is simply a folder on GitHub where your files will live.
 
 1. On the repository page, click the link that says **uploading an existing file**
 2. Drag and drop the following files into the upload area, or click **choose your files** to select them:
-   - `fluvio-universal-widget.js`
+   - `fluvio-universal-widget-v2.js`
+   - `fluvio-universal-widget.js` (original — kept for reference)
    - `fluvio-button-widget.js`
    - `index.html`
    - `README.md`
@@ -71,7 +72,7 @@ GitHub will take 2–5 minutes to publish your files. You will see a confirmatio
 Your widget will be available at:
 
 ```
-https://YOUR-USERNAME.github.io/fluvio-widget/fluvio-universal-widget.js
+https://YOUR-USERNAME.github.io/fluvio-widget/fluvio-universal-widget-v2.js
 https://YOUR-USERNAME.github.io/fluvio-widget/fluvio-button-widget.js
 ```
 
@@ -100,10 +101,11 @@ Once hosting is confirmed, use your GitHub Pages URL as the script source:
 ### Floating Widget
 
 ```html
-<script src="https://YOUR-USERNAME.github.io/fluvio-widget/fluvio-universal-widget.js"
+<script src="https://YOUR-USERNAME.github.io/fluvio-widget/fluvio-universal-widget-v2.js"
         data-webhook="https://hook.us2.make.com/your-webhook-url"
         data-project-id="YOUR-PROJECT-ID"
         data-mode="dual"
+        data-color="#347D9B"
         data-title="AI Assistant"
         data-subtitle="Voice & Chat Support"></script>
 ```
@@ -127,7 +129,7 @@ Once hosting is confirmed, use your GitHub Pages URL as the script source:
 When a new version of the widget is available:
 
 1. Go to your repository on GitHub
-2. Click on the file you want to replace (e.g. `fluvio-universal-widget.js`)
+2. Click on the file you want to replace (e.g. `fluvio-universal-widget-v2.js`)
 3. Click the pencil icon to edit, or use the upload option to replace the file
 4. Scroll down and click **Commit changes**
 5. The update will be live within 2–5 minutes
