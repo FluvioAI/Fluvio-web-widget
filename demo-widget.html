@@ -5,14 +5,31 @@
   <title>FluvioAI Widget Demo</title>
 
   <style>
+    html,
     body {
       margin: 0;
+      width: 100%;
       min-height: 100vh;
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #eaf7ff, #dfffea);
+      overflow: hidden;
+    }
+
+    .demo-shell {
+      width: 142.857%;
+      min-height: 142.857vh;
+      position: relative;
+      transform: scale(0.7);
+      transform-origin: top left;
+    }
+
+    .demo-content {
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
     }
 
     .demo-card {
@@ -48,12 +65,16 @@
 </head>
 
 <body>
-  <div class="demo-card">
-    <h1 id="demoTitle">Try the FluvioAI Web Widget</h1>
-    <p id="demoText">
-      Click the floating assistant button in the bottom-right corner to test the voice and chat experience.
-    </p>
-    <div id="warning" class="warning"></div>
+  <div id="demoShell" class="demo-shell">
+    <div class="demo-content">
+      <div class="demo-card">
+        <h1 id="demoTitle">Try the FluvioAI Web Widget</h1>
+        <p id="demoText">
+          Click the floating assistant button in the bottom-right corner to test the voice and chat experience.
+        </p>
+        <div id="warning" class="warning"></div>
+      </div>
+    </div>
   </div>
 
   <script>
