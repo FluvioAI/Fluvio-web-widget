@@ -231,7 +231,6 @@
         flex-direction: column;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow: hidden;
-        zoom: ${sc};
         /* Hidden by default — shown via data-open */
         visibility: hidden;
         opacity: 0;
