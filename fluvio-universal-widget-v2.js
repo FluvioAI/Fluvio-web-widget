@@ -446,8 +446,8 @@
       /* ── Gradient-mesh orb ── */
       #fluvio-orb-wrapper {
         position: relative;
-        width: 130px;
-        height: 130px;
+        width: min(130px, 22vh);
+        height: min(130px, 22vh);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -465,8 +465,8 @@
       /* ── Core: vivid jewel sphere — shimmer blobs on top ── */
       #fluvio-orb-core {
         position: relative;
-        width: 110px;
-        height: 110px;
+        width: min(110px, 18.5vh);
+        height: min(110px, 18.5vh);
         border-radius: 50%;
         overflow: hidden;
         background: radial-gradient(circle at 42% 36%, ${orb.base} 0%, ${orb.mid} 55%, ${orb.deep} 100%);
@@ -484,7 +484,7 @@
       }
       /* Primary shimmer — center */
       #fluvio-blob-1 {
-        width: 100px; height: 100px;
+        width: min(100px, 17vh); height: min(100px, 17vh);
         background: radial-gradient(circle, ${orb.b1} 0%, ${orb.b1b} 50%, transparent 75%);
         top: 28%; left: 22%;
         opacity: 0.75;
@@ -493,7 +493,7 @@
       }
       /* Complementary shimmer — top-left facet */
       #fluvio-blob-2 {
-        width: 95px; height: 95px;
+        width: min(95px, 16vh); height: min(95px, 16vh);
         background: radial-gradient(circle, ${orb.b2} 0%, ${orb.b2b} 45%, transparent 72%);
         top: 2%; left: -2%;
         opacity: 0.70;
@@ -502,7 +502,7 @@
       }
       /* Triad shimmer — bottom-right facet */
       #fluvio-blob-3 {
-        width: 85px; height: 85px;
+        width: min(85px, 14.5vh); height: min(85px, 14.5vh);
         background: radial-gradient(circle, ${orb.b3} 0%, ${orb.b3b} 45%, transparent 72%);
         top: 48%; left: 20%;
         opacity: 0.68;
@@ -511,7 +511,7 @@
       }
       /* Near-white top specular — crown of the gem */
       #fluvio-blob-4 {
-        width: 70px; height: 55px;
+        width: min(70px, 12vh); height: min(55px, 9.5vh);
         background: radial-gradient(circle, ${orb.b4} 0%, ${orb.b4b} 40%, transparent 70%);
         top: 0%; left: 20%;
         opacity: 0.65;
