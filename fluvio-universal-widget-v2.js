@@ -141,11 +141,6 @@
   function injectStyles() {
     const orb = orbPalette(config.color);
     const sc = config.scale;
-    const origin = config.position === 'bottom-left' ? 'bottom left'
-                 : config.position === 'top-right'   ? 'top right'
-                 : config.position === 'top-left'    ? 'top left'
-                 : config.position === 'center'      ? 'bottom center'
-                 : 'bottom right';
     const css = `
       /* ── FAB: pill shape ── */
       #fluvio-fab {
@@ -168,12 +163,12 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         border: none;
         white-space: nowrap;
-        transform-origin: ${origin};
+        zoom: ${sc};
       }
       #fluvio-fab:hover,
       #fluvio-fab[aria-expanded="true"] {
         animation-play-state: paused;
-        transform: scale(${sc}) translateY(-4px);
+        transform: translateY(-4px);
         box-shadow: 0 12px 40px ${orb.glowListen};
       }
       /* ── Circle FAB variant ── */
@@ -194,8 +189,8 @@
       }
 
       @keyframes fluvio-fab-float {
-        0%, 100% { transform: scale(${sc}) translateY(0); }
-        50%       { transform: scale(${sc}) translateY(-6px); }
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-6px); }
       }
       .fluvio-fab-orb {
         width: 36px;
@@ -239,11 +234,11 @@
         flex-direction: column;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow: hidden;
-        transform-origin: ${origin};
+        zoom: ${sc};
         /* Hidden by default — shown via data-open */
         visibility: hidden;
         opacity: 0;
-        transform: scale(${sc}) translateY(var(--panel-translate-y));
+        transform: translateY(var(--panel-translate-y));
         filter: blur(var(--panel-blur));
         transition:
           opacity var(--panel-open-dur) var(--panel-ease),
@@ -255,7 +250,7 @@
       #fluvio-panel[data-open] {
         visibility: visible;
         opacity: 1;
-        transform: scale(${sc}) translateY(0);
+        transform: translateY(0);
         filter: blur(0);
         transition:
           opacity var(--panel-open-dur) var(--panel-ease),
@@ -266,7 +261,7 @@
       /* Closing state — slides down + blur out */
       #fluvio-panel.is-closing {
         opacity: 0;
-        transform: scale(${sc}) translateY(var(--panel-translate-y));
+        transform: translateY(var(--panel-translate-y));
         filter: blur(var(--panel-blur));
         transition:
           opacity var(--panel-close-dur) var(--panel-ease),
