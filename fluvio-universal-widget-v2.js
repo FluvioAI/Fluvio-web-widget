@@ -846,8 +846,8 @@
       .fluvio-position-top-right #fluvio-panel   { top: 84px; bottom: auto; }
       .fluvio-position-top-left  #fluvio-fab     { top: 20px; left: 20px; bottom: auto; right: auto; }
       .fluvio-position-top-left  #fluvio-panel   { top: 84px; left: 20px; bottom: auto; right: auto; }
-      .fluvio-position-center    #fluvio-fab     { left: 0; right: 0; margin: 0 auto; }
-      .fluvio-position-center    #fluvio-panel   { left: 0; right: 0; margin: 0 auto; }
+      .fluvio-position-center    #fluvio-fab     { left: 0; right: 0; margin: 0 auto; width: fit-content; }
+      .fluvio-position-center    #fluvio-panel   { left: 0; right: 0; margin: 0 auto; width: 380px; }
     `;
 
     const style = document.createElement('style');
