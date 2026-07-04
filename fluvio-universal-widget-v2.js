@@ -47,6 +47,10 @@
   }
   window.FluvioWidgetLoaded = true;
 
+  // Detect iframe context — fixed-position elements bleed out of iframes in Chrome
+  const isInIframe = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+  const fabPos = isInIframe ? 'absolute' : 'fixed';
+
   // ── C3: Webhook URL validation ──────────────────────────────────────────────
   function isValidWebhookUrl(url) {
     try {
@@ -141,8 +145,9 @@
     const orb = orbPalette(config.color);
     const css = `
       /* ── FAB: pill shape ── */
+      ${isInIframe ? 'html, body { position: relative; min-height: 100%; }' : ''}
       #fluvio-fab {
-        position: fixed;
+        position: ${fabPos};
         bottom: 20px;
         right: 20px;
         height: 52px;
@@ -217,7 +222,7 @@
         --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
       }
       #fluvio-panel {
-        position: fixed;
+        position: ${fabPos};
         bottom: 84px;
         right: 20px;
         width: 380px;
