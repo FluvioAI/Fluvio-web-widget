@@ -47,10 +47,6 @@
   }
   window.FluvioWidgetLoaded = true;
 
-  // Detect iframe context — fixed-position elements bleed out of iframes in Chrome
-  const isInIframe = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
-  const fabPos = isInIframe ? 'absolute' : 'fixed';
-
   // ── C3: Webhook URL validation ──────────────────────────────────────────────
   function isValidWebhookUrl(url) {
     try {
@@ -145,9 +141,8 @@
     const orb = orbPalette(config.color);
     const css = `
       /* ── FAB: pill shape ── */
-      ${isInIframe ? 'html, body { position: relative; min-height: 100%; }' : ''}
       #fluvio-fab {
-        position: ${fabPos};
+        position: fixed;
         bottom: 20px;
         right: 20px;
         height: 52px;
@@ -222,13 +217,12 @@
         --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
       }
       #fluvio-panel {
-        position: ${fabPos};
+        position: fixed;
         bottom: 84px;
         right: 20px;
         width: 380px;
         max-width: calc(100vw - 40px);
-        height: min(540px, calc(100vh - 100px));
-        max-height: calc(100vh - 100px);
+        max-height: calc(100vh - 130px);
         background: #fff;
         border-radius: 20px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.15);
@@ -357,9 +351,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: space-evenly;
-        overflow: hidden;
-        padding: min(14px, 2vh) 20px min(16px, 2vh);
+        overflow-y: auto;
+        padding: 14px 20px 16px;
       }
       #fluvio-timer {
         font-size: 13px;
@@ -452,8 +445,8 @@
       /* ── Gradient-mesh orb ── */
       #fluvio-orb-wrapper {
         position: relative;
-        width: min(130px, 26vh);
-        height: min(130px, 26vh);
+        width: 130px;
+        height: 130px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -471,8 +464,8 @@
       /* ── Core: vivid jewel sphere — shimmer blobs on top ── */
       #fluvio-orb-core {
         position: relative;
-        width: min(110px, 22vh);
-        height: min(110px, 22vh);
+        width: 110px;
+        height: 110px;
         border-radius: 50%;
         overflow: hidden;
         background: radial-gradient(circle at 42% 36%, ${orb.base} 0%, ${orb.mid} 55%, ${orb.deep} 100%);
@@ -828,7 +821,6 @@
           left: 16px !important;
           bottom: 74px !important;
           top: auto !important;
-          height: calc(100vh - 110px) !important;
           max-height: calc(100vh - 110px) !important;
         }
         #fluvio-chat-input { font-size: 16px; }
@@ -843,7 +835,6 @@
           left: 12px !important;
           bottom: 68px !important;
           border-radius: 16px;
-          height: calc(100vh - 96px) !important;
           max-height: calc(100vh - 96px) !important;
         }
       }
