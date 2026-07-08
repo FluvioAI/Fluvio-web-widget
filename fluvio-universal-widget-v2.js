@@ -227,6 +227,7 @@
         right: 20px;
         width: 380px;
         max-width: calc(100vw - 40px);
+        height: min(560px, calc(100vh - 130px));
         max-height: calc(100vh - 130px);
         background: #fff;
         border-radius: 20px;
@@ -823,6 +824,7 @@
           left: 16px !important;
           bottom: 74px !important;
           top: auto !important;
+          height: min(560px, calc(100vh - 110px)) !important;
           max-height: calc(100vh - 110px) !important;
         }
         #fluvio-chat-input { font-size: 16px; }
@@ -837,6 +839,7 @@
           left: 12px !important;
           bottom: 68px !important;
           border-radius: 16px;
+          height: min(560px, calc(100vh - 96px)) !important;
           max-height: calc(100vh - 96px) !important;
         }
       }
