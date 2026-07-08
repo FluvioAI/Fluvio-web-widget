@@ -160,9 +160,9 @@
       #fluvio-fab {
         position: absolute;
         pointer-events: auto;
-        bottom: 20px;
-        right: 20px;
-        height: min(48px, 9vh);
+        bottom: 14px;
+        right: 16px;
+        height: min(42px, 8vh);
         padding: min(7px, 1.4vh) min(16px, 3vh) min(7px, 1.4vh) min(7px, 1.4vh);
         border-radius: 999px;
         background: ${config.color};
@@ -241,12 +241,12 @@
       #fluvio-panel {
         position: absolute;
         pointer-events: auto;
-        bottom: 84px;
-        right: 20px;
-        width: 380px;
-        max-width: calc(100vw - 40px);
-        height: min(560px, calc(100vh - 130px));
-        max-height: calc(100vh - 130px);
+        bottom: 72px;
+        right: 16px;
+        width: 340px;
+        max-width: calc(100vw - 32px);
+        height: min(480px, calc(100vh - 100px));
+        max-height: calc(100vh - 100px);
         background: #fff;
         border-radius: 20px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.15);
@@ -302,13 +302,13 @@
       /* ── Header: white ── */
       #fluvio-header {
         background: #fff;
-        padding: 14px 16px;
+        padding: 10px 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         border-bottom: 1px solid #E5E7EB;
         flex-shrink: 0;
-        min-height: 52px;
+        min-height: 42px;
       }
       #fluvio-header-brand {
         font-size: 14px;
@@ -376,40 +376,40 @@
         flex-direction: column;
         align-items: center;
         overflow-y: auto;
-        padding: 14px 20px 16px;
+        padding: 8px 16px 10px;
       }
       #fluvio-timer {
-        font-size: 13px;
+        font-size: 11px;
         color: #9CA3AF;
         text-align: center;
-        margin-bottom: 6px;
+        margin-bottom: 3px;
         font-variant-numeric: tabular-nums;
         letter-spacing: 0.06em;
         font-weight: 500;
       }
       #fluvio-voice-title {
-        font-size: 17px;
+        font-size: 14px;
         font-weight: 700;
         color: #111827;
         text-align: center;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         line-height: 1.3;
       }
       #fluvio-voice-subtitle {
-        font-size: 12px;
+        font-size: 11px;
         color: #6B7280;
         text-align: center;
-        margin-bottom: 14px;
+        margin-bottom: 8px;
         line-height: 1.4;
       }
       #fluvio-status-section {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 12px;
-        padding: 8px 14px;
+        margin-bottom: 8px;
+        padding: 6px 10px;
         background: #F9FAFB;
-        border-radius: 10px;
+        border-radius: 8px;
         width: 100%;
       }
       #fluvio-status-label {
@@ -430,10 +430,10 @@
         all: unset;
         box-sizing: border-box;
         width: 100%;
-        padding: 14px 24px;
+        padding: 10px 16px;
         border: none;
         border-radius: 999px;
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -469,12 +469,12 @@
       /* ── Gradient-mesh orb ── */
       #fluvio-orb-wrapper {
         position: relative;
-        width: min(130px, 22vh);
-        height: min(130px, 22vh);
+        width: min(96px, 17vh);
+        height: min(96px, 17vh);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 4px auto 10px;
+        margin: 2px auto 6px;
         flex-shrink: 0;
       }
       #fluvio-orb-ripple, #fluvio-orb-ripple2 {
@@ -488,8 +488,8 @@
       /* ── Core: vivid jewel sphere — shimmer blobs on top ── */
       #fluvio-orb-core {
         position: relative;
-        width: min(110px, 18.5vh);
-        height: min(110px, 18.5vh);
+        width: min(80px, 14vh);
+        height: min(80px, 14vh);
         border-radius: 50%;
         overflow: hidden;
         background: radial-gradient(circle at 42% 36%, ${orb.base} 0%, ${orb.mid} 55%, ${orb.deep} 100%);
@@ -507,7 +507,7 @@
       }
       /* Primary shimmer — center */
       #fluvio-blob-1 {
-        width: min(100px, 17vh); height: min(100px, 17vh);
+        width: min(72px, 12vh); height: min(72px, 12vh);
         background: radial-gradient(circle, ${orb.b1} 0%, ${orb.b1b} 50%, transparent 75%);
         top: 28%; left: 22%;
         opacity: 0.75;
@@ -516,7 +516,7 @@
       }
       /* Complementary shimmer — top-left facet */
       #fluvio-blob-2 {
-        width: min(95px, 16vh); height: min(95px, 16vh);
+        width: min(68px, 11.5vh); height: min(68px, 11.5vh);
         background: radial-gradient(circle, ${orb.b2} 0%, ${orb.b2b} 45%, transparent 72%);
         top: 2%; left: -2%;
         opacity: 0.70;
@@ -525,7 +525,7 @@
       }
       /* Triad shimmer — bottom-right facet */
       #fluvio-blob-3 {
-        width: min(85px, 14.5vh); height: min(85px, 14.5vh);
+        width: min(60px, 10vh); height: min(60px, 10vh);
         background: radial-gradient(circle, ${orb.b3} 0%, ${orb.b3b} 45%, transparent 72%);
         top: 48%; left: 20%;
         opacity: 0.68;
@@ -534,7 +534,7 @@
       }
       /* Near-white top specular — crown of the gem */
       #fluvio-blob-4 {
-        width: min(70px, 12vh); height: min(55px, 9.5vh);
+        width: min(50px, 8.5vh); height: min(40px, 7vh);
         background: radial-gradient(circle, ${orb.b4} 0%, ${orb.b4b} 40%, transparent 70%);
         top: 0%; left: 20%;
         opacity: 0.65;
