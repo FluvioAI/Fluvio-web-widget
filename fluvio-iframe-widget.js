@@ -51,7 +51,7 @@
 
   // Pin the host body so the iframe page never shows scrollbars
   const bodyPin = document.createElement('style');
-  bodyPin.textContent = 'html,body{overflow:hidden!important;position:fixed!important;width:100%!important;height:100%!important;top:0!important;left:0!important;}';
+  bodyPin.textContent = 'html{overflow:hidden!important;overflow-x:hidden!important;height:100%!important;}body{overflow:hidden!important;overflow-x:hidden!important;position:fixed!important;width:100%!important;height:100%!important;top:0!important;left:0!important;}';
   document.head.appendChild(bodyPin);
 
   // ── C3: Webhook URL validation ──────────────────────────────────────────────
