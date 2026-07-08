@@ -145,18 +145,18 @@
         position: fixed;
         bottom: 20px;
         right: 20px;
-        height: 52px;
-        padding: 8px 18px 8px 8px;
+        height: min(48px, 9vh);
+        padding: min(7px, 1.4vh) min(16px, 3vh) min(7px, 1.4vh) min(7px, 1.4vh);
         border-radius: 999px;
         background: ${config.color};
         color: #fff;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: min(9px, 1.8vh);
         cursor: pointer;
         z-index: 999999;
-        box-shadow: 0 8px 32px ${orb.glow};
-        transition: box-shadow 0.25s ease;
+        box-shadow: 0 6px 24px ${orb.glow};
+        transition: box-shadow 0.25s ease, transform 0.25s ease;
         animation: fluvio-fab-float 3s ease-in-out infinite;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         border: none;
@@ -190,8 +190,8 @@
         50%       { transform: translateY(-6px); }
       }
       .fluvio-fab-orb {
-        width: 36px;
-        height: 36px;
+        width: min(32px, 6vh);
+        height: min(32px, 6vh);
         border-radius: 50%;
         flex-shrink: 0;
         background:
@@ -199,12 +199,17 @@
           conic-gradient(from 200deg at 50% 50%, ${orb.b4}, ${orb.b1}, ${orb.b2}, ${orb.b1b}, ${orb.b4});
       }
       .fluvio-fab-text {
-        font-size: 14px;
+        font-size: min(14px, 2.6vh);
         font-weight: 600;
         color: #fff;
         max-width: 140px;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+      /* Collapse to icon-only on very short viewports (e.g. small iframes) */
+      @media (max-height: 450px) {
+        .fluvio-fab-text { display: none; }
+        #fluvio-fab { padding: min(10px, 2vh); gap: 0; }
       }
 
       /* ── Panel (transitions-dev panel reveal) ── */
@@ -809,11 +814,8 @@
         #fluvio-fab {
           bottom: 16px;
           right: 16px;
-          height: 46px;
-          padding: 6px 14px 6px 6px;
         }
-        .fluvio-fab-orb { width: 32px; height: 32px; }
-        .fluvio-fab-text { font-size: 13px; max-width: 110px; }
+        .fluvio-fab-text { max-width: 110px; }
         #fluvio-panel {
           width: calc(100vw - 32px) !important;
           max-width: calc(100vw - 32px) !important;
