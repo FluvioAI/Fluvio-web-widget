@@ -829,7 +829,7 @@
       #fluvio-branding:hover { color: ${config.color}; }
 
       /* ── Mobile ── */
-      @media (max-width: 768px) {
+      @media (max-width: 380px) {
         #fluvio-fab {
           bottom: 16px;
           right: 16px;
