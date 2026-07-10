@@ -34,8 +34,6 @@
     companyAddress:currentScript?.getAttribute('data-company-address') || '',
     greeting:     currentScript?.getAttribute('data-greeting') || '',
     chatGreeting: currentScript?.getAttribute('data-chat-greeting') || '',
-    // Explicit demo mode flag — avoids substring-sniffing on real project IDs
-    demoMode:     currentScript?.getAttribute('data-demo') === 'true',
     fabText:      currentScript?.getAttribute('data-fab-text') || 'Chat or Talk to...',
     fabStyle:     currentScript?.getAttribute('data-fab-style') || 'pill', // 'pill' | 'circle'
   };
@@ -1017,7 +1015,6 @@
   function initializeWidget(elements, RetellWebClient) {
     let client;
     let isCallActive = false;
-    let demoMode = config.demoMode || !RetellWebClient;
     let currentMode = config.defaultMode;
     let currentChatId = null;
     let chatHistory = [];
@@ -1195,22 +1192,6 @@
       showTypingIndicator();
 
       try {
-        // L3: Demo mode only via explicit data-demo="true" attribute
-        if (config.demoMode || demoMode || !config.projectId) {
-          setTimeout(() => {
-            hideTypingIndicator();
-            // C2: Static demo responses — do not echo user input into innerHTML
-            const demoResponses = [
-              'Thanks for your message! This is a demo response. In production I would connect to your AI agent.',
-              'I received your message. This is demo mode — your real agent would respond here.',
-              'Great question! In production mode your configured AI agent would provide a real answer.',
-            ];
-            addChatMessage(demoResponses[Math.floor(Math.random() * demoResponses.length)], 'agent');
-            elements.chatSend.disabled = false;
-          }, 1000 + Math.random() * 1500);
-          return;
-        }
-
         // Real chat implementation
         
         // Create chat session if we don't have one
@@ -1280,21 +1261,19 @@
     }
 
     try {
-      if (!demoMode) {
+      if (RetellWebClient) {
         client = new RetellWebClient();
       }
 
-      // Update status
-      elements.statusEl.textContent = demoMode ? 'Demo Mode' : 'Offline';
-      elements.statusEl.className = demoMode ? 'connecting' : 'offline';
-      elements.callButton.disabled = false;
-
+      elements.statusEl.textContent = client ? 'Offline' : 'Voice unavailable';
+      elements.statusEl.className = client ? 'offline' : 'offline';
+      elements.callButton.disabled = !client;
 
     } catch (error) {
-      demoMode = true;
-      elements.statusEl.textContent = 'Demo Mode';
-      elements.statusEl.className = 'connecting';
-      elements.callButton.disabled = false;
+      console.error('Fluvio Widget: failed to create Retell client', error);
+      elements.statusEl.textContent = 'Voice unavailable';
+      elements.statusEl.className = 'offline';
+      elements.callButton.disabled = true;
     }
 
     function closePanel() {
@@ -1421,64 +1400,12 @@
         return;
       }
       
-      if (demoMode) {
-        // Demo mode simulation
-        if (!isCallActive) {
-          elements.statusEl.textContent = 'Connecting...';
-          elements.statusEl.className = 'connecting';
-          setOrbState('idle');
-          elements.callButton.disabled = true;
-
-          setTimeout(() => {
-            elements.statusEl.textContent = 'Connected (Demo)';
-            elements.statusEl.className = 'online';
-            isCallActive = true;
-            elements.callButton.className = 'end';
-            elements.callButton.disabled = false;
-            elements.callText.textContent = 'End call';
-            elements.callIcon.innerHTML = createIcon('PhoneOff');
-            setOrbState('listening');
-            startTimer();
-            setTimeout(() => { setOrbState('talking'); }, 1500);
-            setTimeout(() => { setOrbState('listening'); }, 4000);
-          }, 1500);
-        } else {
-          elements.statusEl.textContent = 'Offline';
-          elements.statusEl.className = 'offline';
-          isCallActive = false;
-          elements.callButton.className = 'start';
-          elements.callButton.disabled = false;
-          elements.callText.textContent = 'Start to call';
-          elements.callIcon.innerHTML = createIcon('Phone');
-          setOrbState('idle');
-          stopTimer();
-        }
-        return;
-      }
-
       // Real Retell functionality
       if (!isCallActive) {
         try {
           elements.statusEl.textContent = 'Connecting...';
           elements.statusEl.className = 'connecting';
           elements.callButton.disabled = true;
-
-          if (config.webhook.includes('your-webhook') || config.webhook.includes('httpbin.org')) {
-            setTimeout(() => {
-              elements.statusEl.textContent = 'Connected (Demo)';
-              elements.statusEl.className = 'online';
-              isCallActive = true;
-              elements.callButton.className = 'end';
-              elements.callButton.disabled = false;
-              elements.callText.textContent = 'End call';
-              elements.callIcon.innerHTML = createIcon('PhoneOff');
-              setOrbState('listening');
-              startTimer();
-              setTimeout(() => { setOrbState('talking'); }, 1500);
-              setTimeout(() => { setOrbState('listening'); }, 4000);
-            }, 1500);
-            return;
-          }
 
           const response = await fetchWithTimeout(config.webhook, {
             method: 'POST',
@@ -1560,8 +1487,8 @@
       }
     });
 
-    // Retell event listeners (only if not in demo mode)
-    if (!demoMode && client) {
+    // Retell event listeners
+    if (client) {
       client.on('call_started', () => {
         elements.statusEl.textContent = 'Connected';
         elements.statusEl.className = 'online';
@@ -1638,7 +1565,7 @@
         try {
           RetellWebClientClass = await loadRetellSDK();
         } catch (error) {
-          console.warn('Fluvio Widget: Voice SDK unavailable, running in demo mode.', error.message);
+          console.warn('Fluvio Widget: Voice SDK unavailable, voice calls disabled.', error.message);
         }
       }
 

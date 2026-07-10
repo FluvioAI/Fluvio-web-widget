@@ -173,7 +173,6 @@
     });
 
     await test('Call button starts disabled until SDK resolves', () => {
-      // In demo mode the button gets enabled quickly, so just check it exists
       assert(getCallBtn() !== null, 'Call button should exist');
     });
 
@@ -388,7 +387,7 @@
     });
 
     // ── Suite 7: Voice call lifecycle ────────────────────────────────────────
-    suite('Voice Call Lifecycle (Demo Mode)');
+    suite('Voice Call UI States');
 
     await test('Call button exists and shows "Start to call" initially', async () => {
       await openToMode('voice');
@@ -407,51 +406,6 @@
         await sleep(50);
         const status = getStatus()?.textContent;
         assertContains(status, 'Connecting', 'Status should show Connecting after click');
-      }
-    });
-
-    await test('Orb transitions to listening state when call connects', async () => {
-      await sleep(1600); // wait for demo 1.5s connect delay
-      const orb = getOrbWrapper();
-      const label = getOrbLabel();
-      if (orb && orb.className !== 'idle') {
-        assertEqual(orb.className, 'listening', 'Orb should be in listening state after connect');
-        assertContains(label?.textContent || '', 'Listening', 'Orb label should say Listening');
-      }
-    });
-
-    await test('Orb transitions to talking state during agent speech simulation', async () => {
-      await sleep(1600); // wait for the demo talking phase (1.5s after connect)
-      const orb = getOrbWrapper();
-      if (orb) {
-        assert(
-          orb.className === 'talking' || orb.className === 'listening',
-          `Orb should be in talking or listening state, got: ${orb.className}`
-        );
-      }
-    });
-
-    await test('End Call button appears during active call', async () => {
-      const btn = getCallBtn();
-      // If connected, button should show "End Call"
-      if (btn && btn.classList.contains('end')) {
-        assertEqual(getCallText()?.textContent, 'End Call');
-      }
-    });
-
-    await test('Closing panel during active call resets orb to idle', async () => {
-      const btn = getCallBtn();
-      if (btn?.classList.contains('end')) {
-        // Call is active — close the panel
-        clickClose();
-        await sleep(100);
-        // Re-open to check orb state
-        clickFab();
-        await sleep(100);
-        clickTab('voice');
-        await sleep(100);
-        const orb = getOrbWrapper();
-        assertEqual(orb?.className, 'idle', 'Orb should be idle after panel close during call');
       }
     });
 
@@ -496,7 +450,7 @@
 
     await test('Sent message text appears verbatim in the user bubble', async () => {
       await openToMode('chat');
-      await sleep(3000); // wait for any pending demo response to clear
+      await sleep(3000); // wait for any pending response to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       input.value = 'Unique text 8f3k9';
@@ -509,7 +463,7 @@
 
     await test('Input field clears after message is sent', async () => {
       await openToMode('chat');
-      await sleep(3000);
+      await sleep(3000); // wait for any pending response to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       input.value = 'Clear me after send';
@@ -520,7 +474,7 @@
 
     await test('Empty input does not create a message', async () => {
       await openToMode('chat');
-      await sleep(3000);
+      await sleep(3000); // wait for any pending response to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       input.value = '';
@@ -533,7 +487,7 @@
 
     await test('Whitespace-only input does not send', async () => {
       await openToMode('chat');
-      await sleep(3000);
+      await sleep(3000); // wait for any pending response to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       input.value = '   ';
@@ -546,7 +500,7 @@
 
     await test('Clicking the Send button adds a user message', async () => {
       await openToMode('chat');
-      await sleep(3000);
+      await sleep(3000); // wait for any pending response to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       input.value = 'Sent via button';
@@ -559,7 +513,7 @@
 
     await test('Shift+Enter adds a newline instead of sending', async () => {
       await openToMode('chat');
-      await sleep(3000);
+      await sleep(3000); // wait for any pending response to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       input.value = 'Line 1';
@@ -572,36 +526,35 @@
 
     await test('Send button is disabled immediately after clicking Send', async () => {
       await openToMode('chat');
-      await sleep(3000);
+      await sleep(3000); // wait for any pending response to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       input.value = 'Disable test message';
       getChatSend()?.click();
-      // Demo response takes at least 1000ms — button must still be disabled here
       assert(getChatSend()?.disabled, 'Send button should be disabled while awaiting response');
     });
 
-    await test('Typing indicator is visible while awaiting demo response', async () => {
+    await test('Typing indicator is visible while awaiting response', async () => {
       // Runs immediately after prior test which just clicked Send — response not yet arrived
       const indicator = document.getElementById('fluvio-typing-indicator');
       assert(indicator?.classList.contains('show'), 'Typing indicator should be showing while waiting');
     });
 
-    await test('Demo response arrives and typing indicator disappears', async () => {
-      await sleep(3000); // demo delay is 1000–2500ms; wait with generous buffer
+    await test('Response clears typing indicator and adds agent bubble', async () => {
+      await sleep(5000); // wait for webhook response or error to resolve
       const indicator = document.getElementById('fluvio-typing-indicator');
       assert(!indicator?.classList.contains('show'), 'Typing indicator should be gone after response');
       const agentMsgs = getChatMsgs()?.querySelectorAll('.fluvio-message.agent');
       assert(agentMsgs && agentMsgs.length > 0, 'At least one agent reply should appear');
     });
 
-    await test('Send button re-enables after demo response arrives', async () => {
+    await test('Send button re-enables after response', async () => {
       assert(!getChatSend()?.disabled, 'Send button should be re-enabled after response');
     });
 
     await test('Chat messages survive a tab switch and return', async () => {
       await openToMode('chat');
-      await sleep(3000);
+      await sleep(3000); // wait for any pending response to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       input.value = 'Persist check';
@@ -616,86 +569,7 @@
       assertEqual(countAfter, countBefore, 'Message count should be unchanged after tab switch');
     });
 
-    // ── Suite 10: Voice — End-to-End Call Flow ──────────────────────────────
-    suite('Voice — End-to-End Call Flow');
-
-    await test('Clicking Start call shows "Connecting" status', async () => {
-      await openToMode('voice');
-      await sleep(400);
-      const btn = getCallBtn();
-      if (!btn) return;
-      // Clean up any leftover active call from earlier suites
-      if (btn.classList.contains('end')) { btn.click(); await sleep(200); }
-      if (btn.disabled) return;
-      btn.click();
-      await sleep(50);
-      assertContains(getStatus()?.textContent || '', 'Connecting');
-    });
-
-    await test('Call button is disabled during the connect delay', async () => {
-      assert(getCallBtn()?.disabled, 'Button should be disabled while connecting');
-    });
-
-    await test('Status shows "Connected" after demo connect (1.5s)', async () => {
-      await sleep(1600);
-      assertContains(getStatus()?.textContent || '', 'Connected');
-    });
-
-    await test('Button text changes to "End call" after connect', async () => {
-      assertContains(getCallText()?.textContent?.toLowerCase() || '', 'end');
-      assert(getCallBtn()?.classList.contains('end'), 'Button should carry "end" class');
-    });
-
-    await test('Call timer is counting after connect', async () => {
-      const timerEl = document.getElementById('fluvio-timer');
-      await sleep(2100); // let 2 timer ticks fire
-      const timerText = timerEl?.textContent || '00:00';
-      assert(timerText !== '00:00', `Timer should be running, got: "${timerText}"`);
-    });
-
-    await test('Orb is in an active state (listening or talking) during call', async () => {
-      const orb = getOrbWrapper();
-      assert(
-        orb?.className === 'listening' || orb?.className === 'talking',
-        `Orb should be listening or talking during call, got: "${orb?.className}"`
-      );
-    });
-
-    await test('Clicking End call resets status to "Offline"', async () => {
-      const btn = getCallBtn();
-      if (btn?.classList.contains('end')) btn.click();
-      await sleep(100);
-      assertContains(getStatus()?.textContent || '', 'Offline');
-    });
-
-    await test('Button text resets to "Start to call" after ending', async () => {
-      assertContains(getCallText()?.textContent?.toLowerCase() || '', 'start');
-      assert(getCallBtn()?.classList.contains('start'), 'Button should carry "start" class');
-    });
-
-    await test('Orb resets to idle after call ends', async () => {
-      const orb = getOrbWrapper();
-      assert(
-        !orb?.className || orb.className === 'idle',
-        `Orb should be idle after call ends, got: "${orb?.className}"`
-      );
-    });
-
-    await test('Timer resets to 00:00 after call ends', async () => {
-      assertEqual(document.getElementById('fluvio-timer')?.textContent, '00:00');
-    });
-
-    await test('A second call can be started after ending the first', async () => {
-      await openToMode('voice');
-      await sleep(400);
-      const btn = getCallBtn();
-      if (!btn || btn.disabled || btn.classList.contains('end')) return;
-      btn.click();
-      await sleep(50);
-      assertContains(getStatus()?.textContent || '', 'Connecting');
-    });
-
-    // ── Suite 11: Keyboard Navigation ───────────────────────────────────────
+    // ── Suite 10: Keyboard Navigation ────────────────────────────────────────
     suite('Keyboard Navigation');
 
     await test('Enter key on FAB opens the panel', async () => {
@@ -714,7 +588,7 @@
 
     await test('Enter key in chat input sends message without clicking Send', async () => {
       await openToMode('chat');
-      await sleep(3100); // wait for any pending response
+      await sleep(5000); // wait for any pending response or error to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
@@ -727,7 +601,7 @@
 
     await test('Shift+Enter in chat input inserts a newline, not a send', async () => {
       await openToMode('chat');
-      await sleep(3100);
+      await sleep(5000); // wait for any pending response or error to clear
       const input = getChatInput();
       if (!input || getChatSend()?.disabled) return;
       const before = getChatMsgs()?.querySelectorAll('.fluvio-message.user').length || 0;
@@ -782,7 +656,7 @@
   window.FluvioWidgetLoaded = false; // allow reload in this page context
   </script>
 
-  <!-- Load the widget under test in demo mode -->
+  <!-- Load the widget under test -->
   <script src="./fluvio-universal-widget-v2.js"
           data-webhook="https://hook.us2.make.com/your-webhook-url"
           data-project-id="test_project_123"
@@ -791,8 +665,7 @@
           data-color="#347D9B"
           data-title="Test Widget"
           data-subtitle="Testing"
-          data-agent-name="TestBot"
-          data-demo="true">
+          data-agent-name="TestBot">
   </script>
 
   <script>

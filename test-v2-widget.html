@@ -16,6 +16,7 @@
       flex-direction: column;
       gap: 24px;
       color: white;
+      padding: 40px 20px;
     }
     h1 { font-size: 28px; font-weight: 700; opacity: 0.9; }
     p  { font-size: 15px; opacity: 0.5; }
@@ -30,12 +31,83 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
+
+    /* ── Diagnostic overlay ── */
+    #diag {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 11px;
+      color: #cdd6f4;
+      line-height: 1.7;
+      z-index: 99998;
+      min-width: 170px;
+      pointer-events: none;
+      user-select: none;
+    }
+    #diag .label { color: #6c7086; }
+    #diag .value { color: #cdd6f4; font-weight: 600; }
+    #diag .bp-active { color: #f38ba8; }
+    #diag .bp-ok     { color: #a6e3a1; }
+
+    /* ── Breakpoint ruler at the bottom ── */
+    #ruler {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255,255,255,0.05);
+      z-index: 99997;
+      pointer-events: none;
+    }
+    /* Markers at 360px and 420px */
+    #ruler::before,
+    #ruler::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background: rgba(243,139,168,0.7);
+    }
+    #ruler::before { left: 360px; }
+    #ruler::after  { left: 420px; }
+    .ruler-label {
+      position: fixed;
+      bottom: 6px;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 9px;
+      color: rgba(243,139,168,0.7);
+      pointer-events: none;
+      z-index: 99997;
+    }
+    #rl-360 { left: 364px; }
+    #rl-420 { left: 424px; }
   </style>
 </head>
 <body>
   <span class="badge">Widget v2 Demo</span>
   <h1>Fluvio AI Assistant</h1>
-  <p>Click the button in the bottom-right corner to open the widget.</p>
+  <p>Click the button to open the widget. Resize the window to test responsiveness.</p>
+
+  <!-- Diagnostic overlay -->
+  <div id="diag">
+    <div><span class="label">viewport  </span><span class="value" id="d-vp">—</span></div>
+    <div><span class="label">DPR       </span><span class="value" id="d-dpr">—</span></div>
+    <div><span class="label">breakpoint</span><span class="value" id="d-bp">—</span></div>
+  </div>
+
+  <!-- Breakpoint ruler -->
+  <div id="ruler"></div>
+  <div class="ruler-label" id="rl-360">360</div>
+  <div class="ruler-label" id="rl-420">420</div>
 
   <script src="./fluvio-universal-widget-v2.js"
           data-webhook="https://hook.us2.make.com/your-webhook-url"
@@ -47,6 +119,29 @@
           data-title="AI Assistant"
           data-subtitle="Voice &amp; Chat Support"
           data-agent-name="Aria">
+  </script>
+
+  <script>
+    function updateDiag() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+
+      document.getElementById('d-vp').textContent  = w + ' × ' + h + 'px';
+      document.getElementById('d-dpr').textContent = dpr.toFixed(2) + 'x';
+
+      let bp, bpClass;
+      if (w <= 360)      { bp = '≤360px  (xs)';  bpClass = 'bp-active'; }
+      else if (w <= 420) { bp = '≤420px  (sm)';  bpClass = 'bp-active'; }
+      else               { bp = '>420px  (base)'; bpClass = 'bp-ok'; }
+
+      const bpEl = document.getElementById('d-bp');
+      bpEl.textContent = bp;
+      bpEl.className = 'value ' + bpClass;
+    }
+
+    updateDiag();
+    window.addEventListener('resize', updateDiag);
   </script>
 </body>
 </html>
