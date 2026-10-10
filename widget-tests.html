@@ -80,7 +80,9 @@
   function getChatSend()   { return document.getElementById('fluvio-chat-send'); }
   function getChatMsgs()   { return document.getElementById('fluvio-chat-messages'); }
   function getModeSelector(){ return document.getElementById('fluvio-mode-selector'); }
-  function isPanelOpen()   { return getPanel()?.style.display === 'flex'; }
+  // v2 toggles panel visibility via the data-open attribute (CSS drives
+  // visibility/opacity/transform). Do NOT check style.display here.
+  function isPanelOpen()   { return !!getPanel()?.hasAttribute('data-open'); }
 
   function clickFab()      { getFab()?.click(); }
   function clickClose()    { document.getElementById('fluvio-close')?.click(); }
@@ -157,7 +159,7 @@
     await test('Panel is rendered but hidden on load', () => {
       const panel = getPanel();
       assert(panel !== null, 'Panel element should exist');
-      assertEqual(panel.style.display, '', 'Panel should not be visible on load');
+      assert(!panel.hasAttribute('data-open'), 'Panel should not be open on load');
     });
 
     await test('FAB has aria-expanded="false" on load', () => {
@@ -181,14 +183,25 @@
       assert(tabs && tabs.length === 2, 'Should have 2 tab buttons with role=tab');
     });
 
-    await test('Landing screen exists in DOM (dual mode)', () => {
-      const landing = document.getElementById('fluvio-mode-landing');
-      assert(landing !== null, 'Landing screen should exist in dual mode');
+    await test('No landing screen — panel opens straight to a tab (dual mode)', () => {
+      assertEqual(
+        document.getElementById('fluvio-mode-landing'), null,
+        'Landing screen was removed; dual mode opens directly on a tab'
+      );
+      assertEqual(
+        document.querySelector('.fluvio-mode-card'), null,
+        'Mode cards were removed in favour of the top tab bar'
+      );
     });
 
-    await test('Landing screen is active on load (dual mode)', () => {
-      const landing = document.getElementById('fluvio-mode-landing');
-      assert(landing?.classList.contains('active'), 'Landing should be active initially');
+    await test('Default tab is active on load (dual mode, default-mode=voice)', () => {
+      const voiceTab = getModeSelector()?.querySelector('[data-mode="voice"]');
+      assert(voiceTab?.classList.contains('active'), 'Voice tab should be active by default');
+      assertEqual(voiceTab?.getAttribute('aria-selected'), 'true', 'Voice tab should be aria-selected');
+      assert(
+        document.getElementById('fluvio-voice-container')?.classList.contains('active'),
+        'Voice container should be active by default'
+      );
     });
 
     await test('FAB renders as pill with mini-orb and text', () => {
@@ -252,63 +265,47 @@
       pressEscape(); // should be a no-op, not an error
     });
 
-    // helper: open panel and navigate past landing to a specific mode
+    // helper: open the panel (if closed) and switch to a specific tab
     async function openToMode(mode) {
       if (!isPanelOpen()) { clickFab(); await sleep(80); }
-      const card = document.querySelector(`.fluvio-mode-card[data-mode="${mode}"]`);
-      if (card) { card.click(); await sleep(80); }
-      else { clickTab(mode); await sleep(50); }
+      clickTab(mode);
+      await sleep(80);
     }
 
-    // ── Suite 3b: Landing screen ─────────────────────────────────────────────
-    suite('Landing Screen');
+    // ── Suite 3b: Panel reopen resets to the default tab ────────────────────
+    suite('Panel Reopen');
 
-    await test('Opening panel in dual mode shows landing, hides both containers', async () => {
-      if (isPanelOpen()) { clickFab(); await sleep(50); }
-      clickFab();
-      await sleep(100);
-      const landing = document.getElementById('fluvio-mode-landing');
-      const voice   = document.getElementById('fluvio-voice-container');
-      const chat    = document.getElementById('fluvio-chat-container');
-      assert(landing?.classList.contains('active'), 'Landing should be active');
-      assert(!voice?.classList.contains('active'),  'Voice should be inactive');
-      assert(!chat?.classList.contains('active'),   'Chat should be inactive');
-    });
-
-    await test('Clicking Voice card shows voice container, hides landing', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(80); }
-      const card = document.querySelector('.fluvio-mode-card[data-mode="voice"]');
-      if (card) { card.click(); await sleep(80); }
-      const landing = document.getElementById('fluvio-mode-landing');
-      const voice   = document.getElementById('fluvio-voice-container');
-      assert(!landing?.classList.contains('active'), 'Landing should be hidden');
-      assert(voice?.classList.contains('active'),    'Voice should be active');
-    });
-
-    await test('Clicking Chat card shows chat container', async () => {
-      if (!isPanelOpen()) { clickFab(); await sleep(80); }
-      const card = document.querySelector('.fluvio-mode-card[data-mode="chat"]');
-      if (card) { card.click(); await sleep(80); }
-      const chat = document.getElementById('fluvio-chat-container');
-      assert(chat?.classList.contains('active'), 'Chat should be active');
-    });
-
-    await test('Back button in chat view returns to landing', async () => {
+    await test('Reopening the panel resets to the default tab (voice)', async () => {
       await openToMode('chat');
-      const back = document.getElementById('fluvio-back');
-      if (back) { back.click(); await sleep(80); }
-      const landing = document.getElementById('fluvio-mode-landing');
-      assert(landing?.classList.contains('active'), 'Landing should reappear after back');
-    });
-
-    await test('Closing panel and reopening resets to landing', async () => {
-      await openToMode('voice');
+      assert(
+        document.getElementById('fluvio-chat-container')?.classList.contains('active'),
+        'Precondition: chat should be active'
+      );
       clickClose();
-      await sleep(50);
+      await sleep(400); // allow the close transition (.is-closing) to finish
+      assert(!isPanelOpen(), 'Panel should be closed before reopening');
       clickFab();
       await sleep(100);
-      const landing = document.getElementById('fluvio-mode-landing');
-      assert(landing?.classList.contains('active'), 'Landing should show on re-open');
+      assert(
+        document.getElementById('fluvio-voice-container')?.classList.contains('active'),
+        'Voice tab should be active again after reopen'
+      );
+    });
+
+    await test('Closing panel clears data-open and sets .is-closing then removes it', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(100); }
+      clickClose();
+      assert(!isPanelOpen(), 'data-open should be removed immediately on close');
+      assert(getPanel()?.classList.contains('is-closing'), '.is-closing should be applied during close transition');
+      await sleep(500); // --panel-close-dur is 350ms
+      assert(!getPanel()?.classList.contains('is-closing'), '.is-closing should be cleaned up after the transition');
+    });
+
+    await test('Reopening after close replays the open transition', async () => {
+      if (!isPanelOpen()) { clickFab(); await sleep(100); }
+      assert(isPanelOpen(), 'Panel should be open');
+      assert(!getPanel()?.classList.contains('is-closing'), 'Stale .is-closing must be removed on open');
+      assertEqual(getFab()?.getAttribute('aria-expanded'), 'true', 'FAB aria-expanded should be true when open');
     });
 
     // ── Suite 4: Tab switching ───────────────────────────────────────────────
@@ -326,7 +323,7 @@
       assert(!voice?.classList.contains('active'), 'Voice container should not be active');
     });
 
-    await test('Clicking Web Call tab makes voice container active', async () => {
+    await test('Clicking Voice tab makes voice container active', async () => {
       await openToMode('voice');
       const voice = document.getElementById('fluvio-voice-container');
       assert(voice?.classList.contains('active'), 'Voice container should be active');

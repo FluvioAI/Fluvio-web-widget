@@ -10,12 +10,13 @@ The Fluvio widget appears as a small floating button on your website. When a vis
 
 | File | Purpose |
 |------|---------|
-| `fluvio-universal-widget-v2.js` | The redesigned widget — pill FAB, animated orb, landing screen |
+| `fluvio-universal-widget-v2.js` | The redesigned widget — pill FAB, animated orb, tab bar |
+| `fluvio-iframe-widget.js` | Same widget, optimised for embedding inside an `<iframe>` |
 | `fluvio-universal-widget.js` | Original widget — stable, in production |
 | `fluvio-button-widget.js` | Turns any existing button into an AI call button |
-| `index.html` | Interactive demo and configuration tester |
+| `index.html` | Interactive demo and configuration tester (for the original widget) |
 | `test-v2-widget.html` | Live demo for the v2 redesign |
-| `widget-tests.html` | Automated browser test suite (77 tests) |
+| `widget-tests.html` | Automated browser test suite (60 tests) |
 | `GITHUB-SETUP-GUIDE.md` | Step-by-step instructions for hosting the widget online |
 | `WEBHOOK-MODIFICATION-GUIDE.md` | Technical guide for connecting the widget to Make.com |
 | `docs/QUICK-START.md` | Getting started in 5 minutes |
@@ -41,7 +42,7 @@ Replace `YOUR-HOSTING-URL`, `your-webhook-url`, and `YOUR-PROJECT-ID` with your 
 
 | Mode | What it shows |
 |------|--------------|
-| `dual` | Landing screen with voice and chat options (recommended) |
+| `dual` | Voice and chat, switchable from the tab bar at the top of the panel (recommended) |
 | `voice` | Voice calling only |
 | `chat` | Text chat only |
 

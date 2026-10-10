@@ -44,11 +44,7 @@ data-fab-style="circle"
 
 ### Demo mode
 
-```html
-data-demo="true"
-```
-
-Shows "Demo Mode" in the widget and skips all network calls. Useful for showing the widget to a client or taking screenshots without your Make.com scenario running.
+> **Removed.** Demo mode (`data-demo="true"`) is no longer supported in `fluvio-universal-widget-v2.js`. The attribute is ignored. To preview the widget without a live backend, use the `iframe` variant (`fluvio-iframe-widget.js`), which still supports demo mode.
 
 ---
 
@@ -88,7 +84,6 @@ Here's every option available. Bold = required.
 | `data-agent-name` | AI agent's name | `Alex` |
 | `data-company-name` | Your company name | `Acme Corp` |
 | `data-greeting` | First message in chat | `Hi! I'm {{AI_agent}}...` |
-| `data-demo` | Test mode (no real calls) | `true` |
 
 ---
 

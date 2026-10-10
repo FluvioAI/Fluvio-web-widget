@@ -87,7 +87,7 @@ Add any of the following options to personalize the widget:
 | `data-company-name` | Your company name | — |
 | `data-mode` | `dual`, `voice`, or `chat` | `dual` |
 | `data-default-mode` | Which tab opens first: `voice` or `chat` | `voice` |
-| `data-demo` | Set to `"true"` to test without a real webhook | `false` |
+
 
 ### Position Options
 
