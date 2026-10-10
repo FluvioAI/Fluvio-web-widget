@@ -1,0 +1,23 @@
+# Local secrets and machine-specific config — never commit these.
+.env
+.env.*
+!.env.example
+*.local.js
+config.local.js
+secrets*.js
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+
+# Node — this repo has no build step, but these appear if anyone
+# experiments with a bundler. See AGENTS.md: there is intentionally
+# no package.json; the repo root is the deployed artifact.
+node_modules/
+.vercel/
+dist/
+
+# Test scratch output
+*.log
+test-results/
