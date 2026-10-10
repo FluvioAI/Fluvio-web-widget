@@ -999,15 +999,25 @@
     };
   }
   // ── Load Retell SDK — returns RetellWebClient class directly ────────────────
-  // Uses esm.sh which bundles all peer deps (eventemitter3, livekit-client)
-  // into one self-contained ESM module. No script tags or globals needed.
+  // Uses esm.sh, so no script tags or window globals are needed.
   // CSP requirement: script-src https://esm.sh
+  //
+  // FIX (voice "Error occurred", Oct 2026): the bare specifier
+  //   https://esm.sh/retell-client-js-sdk@2.0.8
+  // does NOT bundle peer deps. It emits a floating caret range for livekit-client
+  // (^2.5.1), which esm.sh re-resolves to the newest 2.x on every cold cache —
+  // silently swapping the WebRTC transport underneath a 2024 SDK. That is how a
+  // working widget broke with no deploy and no Make.com change.
+  // ?deps= pins the resolved version. Bump deliberately, and test a real call.
+  const RETELL_SDK_URL = 'https://esm.sh/retell-client-js-sdk@2.0.8?deps=livekit-client@2.5.1';
+
   async function loadRetellSDK() {
     const mod = await Promise.race([
-      import('https://esm.sh/retell-client-js-sdk@2.0.8'),
+      import(RETELL_SDK_URL),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Retell SDK load timed out')), 15000)),
     ]);
     if (!mod || !mod.RetellWebClient) throw new Error('RetellWebClient not found in SDK module');
+    console.info('[Fluvio Widget] Retell SDK loaded:', RETELL_SDK_URL);
     return mod.RetellWebClient;
   }
 
@@ -1528,7 +1538,18 @@
       });
 
       client.on('error', (error) => {
-        console.error('Retell error:', error);
+        // H1: surface the real cause. The UI still shows a short label, but the
+        // full Retell error (code/message/reason) goes to the console so a
+        // failure is diagnosable without a debugger or a code change.
+        console.error(
+          '[Fluvio Widget] Retell call error:',
+          {
+            code: error?.code,
+            message: error?.message ?? error?.error ?? String(error),
+            status: error?.status,
+            detail: error,
+          }
+        );
         elements.statusEl.textContent = 'Error occurred';
         elements.statusEl.className = 'offline';
         isCallActive = false;

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fluvio — Retell SDK dependency pin check</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 32px; background: #0f1117; color: #e5e7eb;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px; line-height: 1.7;
+    }
+    h1 { font-size: 18px; margin: 0 0 4px; color: #fff; }
+    p.sub { margin: 0 0 24px; color: #6b7280; }
+    .card { background: #151922; border: 1px solid #1f2937; border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; }
+    .card h2 { font-size: 13px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; }
+    .row { display: flex; gap: 10px; align-items: baseline; padding: 3px 0; }
+    .label { color: #6b7280; min-width: 210px; }
+    .val { color: #e5e7eb; word-break: break-all; }
+    .pass { color: #34d399; font-weight: 700; }
+    .fail { color: #f87171; font-weight: 700; }
+    .warn { color: #fbbf24; font-weight: 700; }
+    code { background: #1f2937; padding: 2px 6px; border-radius: 4px; color: #a5b4fc; }
+    #summary { font-size: 15px; font-weight: 700; padding: 16px; border-radius: 10px; margin-top: 18px; }
+    .all-pass { background: #064e3b; color: #34d399; }
+    .some-fail { background: #7f1d1d; color: #f87171; }
+    .pending  { background: #1f2937; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <h1>Retell SDK dependency pin check</h1>
+  <p class="sub">
+    Verifies that <code>fluvio-universal-widget-v2.js</code> loads a <b>pinned</b> livekit-client
+    rather than a floating caret range. No microphone or live Retell agent needed.
+  </p>
+
+  <div class="card">
+    <h2>1. What the widget's URL resolves to</h2>
+    <div class="row"><span class="label">Widget import URL</span><span class="val" id="widgetUrl">…</span></div>
+    <div class="row"><span class="label">esm.sh emitted imports</span><span class="val" id="esmImports">…</span></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Pin status</h2>
+    <div class="row"><span class="label">livekit-client specifier</span><span class="val" id="lkSpec">…</span></div>
+    <div class="row"><span class="label">Floating caret range?</span><span class="val" id="isFloating">…</span></div>
+    <div class="row"><span class="label">Verdict</span><span class="val" id="pinVerdict">…</span></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Module loads and exports RetellWebClient</h2>
+    <div class="row"><span class="label">Dynamic import</span><span class="val" id="loadResult">…</span></div>
+    <div class="row"><span class="label">RetellWebClient is a function</span><span class="val" id="hasClass">…</span></div>
+  </div>
+
+  <div id="summary" class="pending">Running…</div>
+
+<script>
+const WIDGET_URL = 'https://esm.sh/retell-client-js-sdk@2.0.8?deps=livekit-client@2.5.1';
+const results = [];
+function check(name, pass, detail) {
+  results.push({ name, pass, detail });
+  const el = document.createElement('div');
+  el.className = 'row';
+  el.innerHTML = `<span class="label">${name}</span><span class="val ${pass ? 'pass' : 'fail'}">${pass ? 'PASS' : 'FAIL'}</span>`;
+  document.getElementById('summary').before(el);
+}
+function set(id, v) { document.getElementById(id).innerHTML = v; }
+
+async function run() {
+  document.getElementById('widgetUrl').innerHTML = `<code>${WIDGET_URL}</code>`;
+
+  // 1. Ask esm.sh what the widget's pinned URL actually emits.
+  let imports = [];
+  try {
+    const res = await fetch(WIDGET_URL);
+    const body = await res.text();
+    imports = [...body.matchAll(/from\s+"([^"]+)"/g)].map(m => m[1]);
+    set('esmImports', imports.map(i => `<code>${i}</code>`).join('<br>'));
+  } catch (e) {
+    set('esmImports', `<span class="fail">could not fetch: ${e.message}</span>`);
+  }
+
+  // 2. Is livekit pinned or floating?
+  const lk = imports.find(i => /livekit-client/.test(i)) || '(not found)';
+  set('lkSpec', `<code>${lk}</code>`);
+  const floating = /\^|\~/.test(lk) || /@2\.\d+\/.*livekit/.test(lk) === false && /livekit-client@2\.\d+\.\d+/.test(lk) === false;
+  const isPinned = /livekit-client@\d+\.\d+\.\d+/.test(lk) && !/\^|\~/.test(lk);
+  set('isFloating', floating ? '<span class="fail">YES — unpinned, will drift</span>' : '<span class="pass">no</span>');
+  check('livekit-client is pinned to an exact version', isPinned, lk);
+
+  // 3. Does it actually load and export the class?
+  try {
+    const mod = await import(WIDGET_URL);
+    set('loadResult', '<span class="pass">loaded</span>');
+    check('ESM module loads without error', true);
+    const ok = typeof mod.RetellWebClient === 'function';
+    set('hasClass', ok ? '<span class="pass">yes</span>' : '<span class="fail">no</span>');
+    check('RetellWebClient exported as a constructor', ok);
+  } catch (e) {
+    set('loadResult', `<span class="fail">${e.message}</span>`);
+    set('hasClass', '<span class="fail">n/a</span>');
+    check('ESM module loads without error', false, e.message);
+    check('RetellWebClient exported as a constructor', false);
+  }
+
+  const failed = results.filter(r => !r.pass).length;
+  const sum = document.getElementById('summary');
+  sum.className = failed === 0 ? 'all-pass' : 'some-fail';
+  sum.innerHTML = failed === 0
+    ? `✓ All ${results.length} checks passed — dependency is pinned`
+    : `✗ ${failed} of ${results.length} checks FAILED`;
+}
+run();
+</script>
+</body>
+</html>
