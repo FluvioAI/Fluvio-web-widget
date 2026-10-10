@@ -72,11 +72,16 @@ async function run() {
   document.getElementById('widgetUrl').innerHTML = `<code>${WIDGET_URL}</code>`;
 
   // 1. Ask esm.sh what the widget's pinned URL actually emits.
+  // NOTE: esm.sh emits deps as bare side-effect imports (import "..."), NOT as
+  // "export ... from ...". Matching only /from "..." silently misses the very
+  // specifier we are checking, so match both forms.
   let imports = [];
   try {
     const res = await fetch(WIDGET_URL);
     const body = await res.text();
-    imports = [...body.matchAll(/from\s+"([^"]+)"/g)].map(m => m[1]);
+    imports = [
+      ...new Set([...body.matchAll(/(?:from|import)\s+"([^"]+)"/g)].map(m => m[1])),
+    ];
     set('esmImports', imports.map(i => `<code>${i}</code>`).join('<br>'));
   } catch (e) {
     set('esmImports', `<span class="fail">could not fetch: ${e.message}</span>`);
@@ -85,9 +90,10 @@ async function run() {
   // 2. Is livekit pinned or floating?
   const lk = imports.find(i => /livekit-client/.test(i)) || '(not found)';
   set('lkSpec', `<code>${lk}</code>`);
-  const floating = /\^|\~/.test(lk) || /@2\.\d+\/.*livekit/.test(lk) === false && /livekit-client@2\.\d+\.\d+/.test(lk) === false;
-  const isPinned = /livekit-client@\d+\.\d+\.\d+/.test(lk) && !/\^|\~/.test(lk);
-  set('isFloating', floating ? '<span class="fail">YES — unpinned, will drift</span>' : '<span class="pass">no</span>');
+  const isPinned = /livekit-client@\d+\.\d+\.\d+/.test(lk) && !/livekit-client@[^^\s]*[\^~]/.test(lk);
+  set('isFloating', isPinned
+    ? '<span class="pass">no — exact version</span>'
+    : '<span class="fail">YES — unpinned, will drift</span>');
   check('livekit-client is pinned to an exact version', isPinned, lk);
 
   // 3. Does it actually load and export the class?
@@ -103,6 +109,20 @@ async function run() {
     set('hasClass', '<span class="fail">n/a</span>');
     check('ESM module loads without error', false, e.message);
     check('RetellWebClient exported as a constructor', false);
+  }
+
+  // 4. The shipped widget source must not reintroduce a bare, unpinned specifier.
+  let src = '';
+  try {
+    const r = await fetch('./fluvio-universal-widget-v2.js');
+    src = await r.text();
+  } catch (e) { /* served from file:// — skip source check */ }
+  if (src) {
+    const bareImport = src.match(/esm\.sh\/retell-client-js-sdk@[\d.]+(?![\w]*\?)/);
+    check('Widget source uses the pinned ?deps= specifier', !bareImport,
+      bareImport ? `found unpinned: ${bareImport[0]}` : 'pinned');
+    const hasConst = /RETELL_SDK_URL\s*=\s*'[^']*deps=livekit-client@[\d.]+/.test(src);
+    check('RETELL_SDK_URL pins an exact livekit-client version', hasConst);
   }
 
   const failed = results.filter(r => !r.pass).length;
