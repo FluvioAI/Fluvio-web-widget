@@ -55,7 +55,7 @@ Scans for `.fluvio-call-btn` elements and attaches voice-only call handlers. Use
 - **CSS is injected via `<style>` tag** — all styles in `injectStyles()` as template literal; brand color and orb palette interpolated at runtime
 - **`adjustPanelPosition()` writes inline position styles onto the panel** on every open/resize/scroll, overriding the position-variant CSS classes. Debounced with `requestAnimationFrame`.
 - **Dynamic variables** map from `data-*` attributes to snake_case keys for the Retell/Make.com backend
-- **Greeting placeholders** (`{{AI_agent}}`, `{{company_name}}`, etc.) are NOT resolved client-side — no widget JS handles `{{`. They are a Make.com/Retell-side concern.
+- **Greeting placeholders** (`{% raw %}{{AI_agent}}{% endraw %}`, `{% raw %}{{company_name}}{% endraw %}`, etc.) are NOT resolved client-side — no widget JS handles the double-brace syntax. They are a Make.com/Retell-side concern.
 - **XSS protection** — all config values interpolated into HTML use `esc()` helper; chat bubbles are built as DOM nodes with `textContent`; webhook responses are shape-validated before reaching the DOM
 - **All `fetch` calls** go through `fetchWithTimeout()` (AbortController, 15s)
 

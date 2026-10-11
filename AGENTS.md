@@ -76,9 +76,12 @@ routes it. See `WEBHOOK-MODIFICATION-GUIDE.md` for the scenario wiring.
 - `data-*` attributes map to snake_case `dynamic_variables` (`data-agent-name` →
   `AI_agent`, `data-company-name` → `company_name`, …) for the Retell/Make backend.
 
-**The `{{AI_agent}}`-style placeholders in `docs/CUSTOMIZATION.md` are not resolved by any
-widget.** No JS file contains `{{` handling — they are a Make.com/Retell-side concern.
+**The greeting placeholders in `docs/CUSTOMIZATION.md` are not resolved by any widget.**
+No JS file contains any `double-brace` handling — they are a Make.com/Retell-side concern.
 Changing how `dynamic_variables` is shaped breaks every customer scenario.
+
+The literal placeholder syntax is `{% raw %}{{AI_agent}}{% endraw %}` (double braces around a
+name). It must stay inside `{% raw %}` — see the Jekyll note below.
 
 ## Security invariants
 
@@ -157,8 +160,8 @@ claim to a customer:
 - `CLAUDE.md` is the closest thing to a technical reference here; keep it current when
   v2's architecture changes. It also records the audit-comment scheme below.
 - `SETUP-GUIDE.md` still calls the product "VoxBridge" and shows an ASCII tab layout.
-- `docs/CUSTOMIZATION.md` documents `{{AI_agent}}`-style placeholders as if the widget
-  resolved them. It does not — they are Make.com/Retell-side.
+- `docs/CUSTOMIZATION.md` documents `{% raw %}{{AI_agent}}{% endraw %}`-style placeholders
+  as if the widget resolved them. It does not — they are Make.com/Retell-side.
 - `index.html` previews **v1**, so it will not reflect v2 changes.
 
 All docs are valid UTF-8 without BOM. If `?` appears where an em-dash should be, that is a
