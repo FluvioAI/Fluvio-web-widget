@@ -1354,6 +1354,8 @@
       elements.fab.focus();
     }
 
+    const defaultActive = config.mode === 'chat' ? 'chat' : 'voice';
+
     function openPanel() {
       if (elements.panel.adjustPosition) elements.panel.adjustPosition();
       var panel = elements.panel;
