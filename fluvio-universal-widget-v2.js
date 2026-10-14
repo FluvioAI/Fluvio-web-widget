@@ -1009,7 +1009,7 @@
   // silently swapping the WebRTC transport underneath a 2024 SDK. That is how a
   // working widget broke with no deploy and no Make.com change.
   // ?deps= pins the resolved version. Bump deliberately, and test a real call.
-  const RETELL_SDK_URL = 'https://esm.sh/retell-client-js-sdk@2.0.8?deps=livekit-client@2.5.1';
+  const RETELL_SDK_URL = 'https://esm.sh/retell-client-js-sdk@3.0.2?deps=livekit-client@2.5.1';
 
   async function loadRetellSDK() {
     const mod = await Promise.race([
@@ -1462,6 +1462,19 @@
           if (webhookData.call_inbound && webhookData.call_inbound.dynamic_variables) {
             callOptions.retell_llm_dynamic_variables = webhookData.call_inbound.dynamic_variables;
           }
+
+          // Retell's /v3/create-web-call can issue a WHIP "gateway" token instead of a
+          // LiveKit one. The two are indistinguishable, so the webhook must pass
+          // through Retell's `transport` and `call_id`; an SDK that guesses LiveKit
+          // fails with "invalid API key". Absent `transport` keeps the LiveKit default.
+          if (webhookData.transport === 'gateway' || webhookData.transport === 'livekit') {
+            callOptions.transport = webhookData.transport;
+          }
+          if (webhookData.call_id) callOptions.callId = webhookData.call_id;
+          if (callOptions.transport === 'gateway' && !callOptions.callId) {
+            throw new Error('Webhook returned transport "gateway" without call_id');
+          }
+          console.info('[Fluvio Widget] startCall transport:', callOptions.transport || 'livekit (default)');
 
           await client.startCall(callOptions);
 
