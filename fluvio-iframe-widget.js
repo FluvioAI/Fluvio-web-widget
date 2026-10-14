@@ -1568,6 +1568,15 @@
           if (callOptions.transport === 'gateway' && !callOptions.callId) {
             throw new Error('Webhook returned transport "gateway" without call_id');
           }
+          if (callOptions.transport === 'gateway') {
+            // Gateway calls send no agent_start/stop_talking events; the orb is
+            // driven from the agent's audio level instead (see the 'audio' handler).
+            callOptions.emitRawAudioSamples = true;
+            if (Array.isArray(webhookData.ice_servers) &&
+                webhookData.ice_servers.every(function (s) { return s && s.urls; })) {
+              callOptions.iceServers = webhookData.ice_servers;
+            }
+          }
           console.info('[Fluvio Widget] startCall transport:', callOptions.transport || 'livekit (default)');
 
           await client.startCall(callOptions);
@@ -1609,6 +1618,8 @@
     // Retell event listeners (only if not in demo mode)
     if (!demoMode && client) {
       client.on('call_started', () => {
+        agentTalking = false;
+        quietSince = 0;
         elements.statusEl.textContent = 'Connected';
         elements.statusEl.className = 'online';
         isCallActive = true;
@@ -1632,6 +1643,37 @@
         elements.callIcon.innerHTML = createIcon('Phone');
         setOrbState('idle');
         stopTimer();
+      });
+
+      // Gateway transport (Retell v3): no agent_start/stop_talking events, so derive
+      // "talking" from the RMS of the agent's audio. Hysteresis stops the orb
+      // flickering between words: start fast, stop only after a quiet hold.
+      let agentTalking = false;
+      let quietSince = 0;
+      client.on('audio', (samples) => {
+        if (!isCallActive) return;
+        let sum = 0;
+        for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
+        const rms = Math.sqrt(sum / samples.length);
+        const now = performance.now();
+        if (rms > 0.01) {
+          quietSince = 0;
+          if (!agentTalking) {
+            agentTalking = true;
+            elements.statusEl.textContent = 'Agent speaking...';
+            elements.statusEl.className = 'online';
+            setOrbState('talking');
+          }
+        } else if (agentTalking) {
+          if (!quietSince) quietSince = now;
+          if (now - quietSince > 600) {
+            agentTalking = false;
+            quietSince = 0;
+            elements.statusEl.textContent = 'Listening...';
+            elements.statusEl.className = 'online';
+            setOrbState('listening');
+          }
+        }
       });
 
       client.on('agent_start_talking', () => {
