@@ -47,48 +47,21 @@
   let isCallActive = false;
   let currentButton = null;
 
-  // Load Retell SDK
-  function loadRetellSDK() {
-    return new Promise((resolve, reject) => {
-      if (window.RetellWebClient) {
-        resolve();
-        return;
-      }
+  // Load Retell SDK via esm.sh, pinned (same URL as fluvio-universal-widget-v2.js).
+  // The old unpkg/jsdelivr "@latest/dist/retell-client-js-sdk.min.js" URL 404s since SDK 3.x
+  // dropped that file. Pinning livekit-client stops esm.sh floating the caret range.
+  // CSP requirement: script-src https://esm.sh
+  const RETELL_SDK_URL = 'https://esm.sh/retell-client-js-sdk@3.0.2?deps=livekit-client@2.5.1';
 
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
-      
-      script.onload = () => {
-        resolve();
-      };
-      
-      script.onerror = () => {
-        // Fallback to jsdelivr
-        const script2 = document.createElement('script');
-        script2.src = 'https://cdn.jsdelivr.net/npm/retell-client-js-sdk@latest/dist/retell-client-js-sdk.min.js';
-        
-        script2.onload = () => {
-          resolve();
-        };
-        
-        script2.onerror = () => {
-          // Fallback to skypack with dynamic import
-          import('https://cdn.skypack.dev/retell-client-js-sdk')
-            .then(({ RetellWebClient }) => {
-              window.RetellWebClient = RetellWebClient;
-              resolve();
-            })
-            .catch(err => {
-              console.error('All SDK loading methods failed:', err);
-              reject(new Error('Failed to load Retell SDK'));
-            });
-        };
-        
-        document.head.appendChild(script2);
-      };
-      
-      document.head.appendChild(script);
-    });
+  async function loadRetellSDK() {
+    if (window.RetellWebClient) return;
+    const mod = await Promise.race([
+      import(RETELL_SDK_URL),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Retell SDK load timed out')), 15000)),
+    ]);
+    if (!mod || !mod.RetellWebClient) throw new Error('RetellWebClient not found in SDK module');
+    window.RetellWebClient = mod.RetellWebClient;
+    console.info('[Fluvio Button] Retell SDK loaded:', RETELL_SDK_URL);
   }
 
   // Get access token from webhook
@@ -123,6 +96,9 @@
         if (data.access_token) {
           return {
             accessToken: data.access_token,
+            transport: data.transport,
+            callId: data.call_id,
+            iceServers: data.ice_servers,
             dynamicVariables: data.call_inbound?.dynamic_variables || {}
           };
         } else {
@@ -183,11 +159,11 @@
       return;
     }
 
+    const originalText = button.textContent;
     try {
       currentButton = button;
       
       // Update button state
-      const originalText = button.textContent;
       button.textContent = 'Connecting...';
       button.disabled = true;
 
@@ -195,7 +171,7 @@
       const dynamicVariables = getDynamicVariables(button);
 
       // Get access token
-      const { accessToken, dynamicVariables: webhookVariables } = await getAccessToken(webhook, projectId, dynamicVariables);
+      const { accessToken, transport, callId, iceServers, dynamicVariables: webhookVariables } = await getAccessToken(webhook, projectId, dynamicVariables);
 
       // Merge dynamic variables (webhook takes priority)
       const finalVariables = { ...dynamicVariables, ...webhookVariables };
@@ -223,12 +199,23 @@
           button.textContent = originalText;
           button.disabled = false;
           currentButton = null;
-          alert('Call failed: ' + error.message);
+          alert('Call failed: ' + ((error && error.message) || error));
         });
       }
 
       // Start the call
       const callOptions = { accessToken };
+
+      // Retell v3 issues a WHIP "gateway" token; the SDK can't tell it from a LiveKit one,
+      // so the webhook must pass through transport + call_id (+ ice_servers).
+      if (transport === 'gateway' || transport === 'livekit') callOptions.transport = transport;
+      if (callId) callOptions.callId = callId;
+      if (transport === 'gateway') {
+        if (!callId) throw new Error('Webhook returned transport "gateway" without call_id');
+        if (Array.isArray(iceServers) && iceServers.every(function (s) { return s && s.urls; })) {
+          callOptions.iceServers = iceServers;
+        }
+      }
       
       // Add dynamic variables if available
       if (Object.keys(finalVariables).length > 0) {

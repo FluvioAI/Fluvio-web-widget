@@ -47,7 +47,7 @@ Stable production version. Leave untouched.
 Iframe-optimised side variant, for embedding the widget inside an `<iframe>`. Wraps the FAB and panel in a fixed `#fluvio-iframe-root` and pins the host body (`position: fixed`) so the iframe page never scrolls; children are positioned absolutely. Same webhook contract as v2, but it still contains the demo-mode simulation that v2 removed. Changes must be ported from v2 manually.
 
 ### `fluvio-button-widget.js`
-Scans for `.fluvio-call-btn` elements and attaches voice-only call handlers. Uses the same webhook pattern, but loads the Retell SDK and Lucide from `<script>` tags on unpkg with a jsdelivr fallback.
+Scans for `.fluvio-call-btn` elements and attaches voice-only call handlers. Uses the same webhook pattern, and loads the pinned Retell SDK (3.0.2, `?deps=livekit-client@2.5.1`) via dynamic `import()` from esm.sh, like v2. It forwards the webhook's `transport`, `call_id` and `ice_servers` to `startCall`. (The old unpkg/jsdelivr `.min.js` URLs 404 since SDK 3.x.) Lucide is still loaded from unpkg.
 
 ## Key Constraints
 

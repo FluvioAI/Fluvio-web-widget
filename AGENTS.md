@@ -20,7 +20,7 @@ no build step to propagate a change from one to another.
 | `fluvio-universal-widget-v2.js` | **Primary dev target.** All new work goes here. |
 | `fluvio-universal-widget.js` | Original v1, frozen and in production. Never modify. |
 | `fluvio-iframe-widget.js` | Side variant for `<iframe>` embeds (fixed root wrapper, pinned host body, absolute positioning). Changes are **not** automatically mirrored from v2 — port deliberately. |
-| `fluvio-button-widget.js` | Standalone; attaches voice handlers to existing `.fluvio-call-btn` elements. Still uses the old unpkg/jsdelivr `<script>` CDN loading. |
+| `fluvio-button-widget.js` | Standalone; attaches voice handlers to existing `.fluvio-call-btn` elements. Loads the pinned Retell SDK 3.0.2 via esm.sh and forwards `transport`/`call_id`/`ice_servers`, like v2. |
 
 If you fix a bug in v2 and it also affects the iframe or button variant, port it
 explicitly — nothing will remind you.
@@ -41,8 +41,8 @@ Things that will bite you:
 
 - **The Retell SDK is loaded via dynamic `import()` from `esm.sh`, not a script tag.**
   There is no `window.RetellWebClient` global and no `retellClient` at init time. CSP on
-  the host page must allow `script-src https://esm.sh`. Contrast the button widget, which
-  still uses unpkg → jsdelivr `<script>` fallback.
+  the host page must allow `script-src https://esm.sh`. The button widget now loads the SDK the same way (see its entry above); it previously
+  used an unpkg → jsdelivr `<script>` fallback that 404s on SDK 3.x.
 - **Icons are inline SVG strings in an `ICONS` map.** There is no Lucide dependency, and
   `initializeLucideIcons()` is a deliberate no-op kept so call sites don't throw. Don't
   reintroduce `data-lucide` attributes.
